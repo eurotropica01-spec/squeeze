@@ -75,15 +75,9 @@ img, svg { display: block; max-width: 100%; }
 
 .brand { display: flex; align-items: center; gap: 9px; font-size: 15.5px; letter-spacing: -0.02em; }
 .brand__mark {
-  width: 18px; height: 18px; border-radius: var(--r-xs);
-  background: var(--ink); position: relative; overflow: hidden; flex: none;
+  width: 20px; height: 20px; flex: none;
+  color: var(--ink);
 }
-.brand__mark::before, .brand__mark::after {
-  content: ""; position: absolute; left: 4px; right: 4px; height: 2px;
-  border-radius: 2px; background: var(--tint);
-}
-.brand__mark::before { top: 4.5px; }
-.brand__mark::after  { bottom: 4.5px; }
 
 .brand__docs {
   font-size: 12px; color: var(--t-3);

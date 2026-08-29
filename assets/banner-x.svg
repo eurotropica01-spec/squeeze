@@ -1,0 +1,26 @@
+<svg width="1500" height="500" viewBox="0 0 1500 500" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1500" height="500" fill="#262626"/>
+
+  <!-- big pinch glyph, right -->
+  <g transform="translate(1064,46) scale(17)" fill="none" stroke="#ffdcd3" stroke-width="2.5" stroke-linecap="round">
+    <path d="M7.6 4.4 C 10.2 8.2, 10.2 15.8, 7.6 19.6"/>
+    <path d="M16.4 4.4 C 13.8 8.2, 13.8 15.8, 16.4 19.6"/>
+  </g>
+  <circle cx="1268" cy="250" r="30" fill="#ffffff"/>
+
+  <!-- brand, top left -->
+  <g transform="translate(66,52) scale(2.6)" fill="none" stroke="#ffdcd3" stroke-width="2.5" stroke-linecap="round">
+    <path d="M7.6 4.4 C 10.2 8.2, 10.2 15.8, 7.6 19.6"/>
+    <path d="M16.4 4.4 C 13.8 8.2, 13.8 15.8, 16.4 19.6"/>
+  </g>
+  <circle cx="97" cy="83" r="4.6" fill="#ffffff"/>
+  <text x="138" y="95" font-family="Inter" font-weight="500" font-size="34" letter-spacing="-0.9" fill="#ffffff">Squeeze</text>
+
+  <!-- headline -->
+  <text x="78" y="266" font-family="Inter" font-weight="500" font-size="98" letter-spacing="-3.4" fill="#ffffff">Sell What</text>
+  <text x="78" y="364" font-family="Inter" font-weight="500" font-size="98" letter-spacing="-3.4" fill="#ffffff">You Don&#8217;t Own.</text>
+
+  <!-- sub -->
+  <text x="80" y="428" font-family="JetBrains Mono" font-weight="500" font-size="23" fill="#ffffff" opacity="0.55">The borrow desk &amp; short interest tape for Robinhood Chain</text>
+  <text x="80" y="462" font-family="JetBrains Mono" font-weight="500" font-size="18" fill="#ffffff" opacity="0.32">github.com/eurotropica01-spec/squeeze</text>
+</svg>

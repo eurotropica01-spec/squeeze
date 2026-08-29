@@ -1,4 +1,4 @@
-# Squeeze
+<img src="assets/wordmark.png" alt="Squeeze" width="340">
 
 **The borrow desk and short interest tape for Robinhood Chain.**
 
