@@ -1,0 +1,20 @@
+# Netlify config — static site, no build step.
+# The whole repo is published: /site/ (marketing), /docs/, /data/tape.json.
+
+[build]
+  publish = "."
+  command = ""
+
+# Land on the marketing site. force=true so this wins from the root
+# index.html meta-refresh fallback (kept for GitHub Pages).
+[[redirects]]
+  from = "/"
+  to = "/site/"
+  status = 302
+  force = true
+
+# The tape must never be served stale — the site fetches it live.
+[[headers]]
+  for = "/data/*"
+  [headers.values]
+    Cache-Control = "no-cache"

@@ -39,6 +39,16 @@ Point the verifier at any token:
 node indexer/verify-oracle.mjs 0x<token>
 ```
 
+## Host it on Netlify
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/eurotropica01-spec/squeeze)
+
+One click: the button copies this repo into your GitHub account and deploys it as a static site — no build step, `netlify.toml` handles the rest. The root URL redirects to `/site/`, the docs live at `/docs/`.
+
+To keep the tape refreshing on your copy, open the **Actions** tab of your new repo once and enable workflows — the `Refresh tape` action then re-reads Robinhood Chain every 6 hours and commits `data/tape.json`, and every commit triggers a Netlify redeploy automatically.
+
+Zero-git alternative: download this repo as a ZIP, unpack it, and drag the folder onto [netlify.com/drop](https://app.netlify.com/drop) — same site, but the data stays frozen at the moment of the drop.
+
 ## How it is possible
 
 The long version is in [the docs](docs/index.html) and [`SPEC.md`](SPEC.md).
