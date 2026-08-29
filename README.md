@@ -39,6 +39,13 @@ Point the verifier at any token:
 node indexer/verify-oracle.mjs 0x<token>
 ```
 
+Find holders who cannot exit their position — the demand side of a block-trade desk:
+
+```bash
+node indexer/whale-scan.mjs        # every eligible market
+node indexer/whale-scan.mjs HMM    # one market
+```
+
 ## Host it on Netlify
 
 [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/eurotropica01-spec/squeeze)
@@ -79,6 +86,7 @@ indexer/         the live data layer
   lib.mjs        RPC, ABI decoding, V3 reads
   verify-oracle.mjs  pass/fail proof against a live pool
   build-tape.mjs     writes data/tape.json
+  whale-scan.mjs     stuck positions and dump-vs-block economics
 data/tape.json   generated — refreshed every 6h by CI
 docs/            protocol documentation site
 site/            marketing site, renders data/tape.json
