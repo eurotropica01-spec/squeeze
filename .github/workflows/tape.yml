@@ -1,0 +1,40 @@
+name: Refresh tape
+
+# The tape is only credible if it stays current. This re-reads Robinhood Chain
+# and commits data/tape.json whenever it actually changed.
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Verify the oracle claim still holds
+        run: node indexer/verify-oracle.mjs
+
+      - name: Rebuild the tape
+        run: node indexer/build-tape.mjs
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- data/tape.json; then
+            echo "No change."
+            exit 0
+          fi
+          block=$(node -e "process.stdout.write(String(require('./data/tape.json').block))")
+          git config user.name  "squeeze-indexer"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/tape.json
+          git commit -m "chore: refresh tape at block ${block}"
+          git push

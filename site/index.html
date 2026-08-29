@@ -24,8 +24,8 @@
       <a href="../docs/index.html">Docs</a>
     </div>
     <div class="nav__right">
-      <button class="addr" id="copyAddr"><i class="dot"></i><span class="mono" id="addrText">0x7c4E…9aF1</span></button>
-      <a class="btn" href="#band">Early access</a>
+      <a class="addr" href="#tape" title="Latest indexed block on Robinhood Chain"><i class="dot"></i><span class="mono" id="navBlock">connecting…</span></a>
+      <a class="btn" href="https://github.com/eurotropica01-spec/squeeze">GitHub</a>
     </div>
   </div>
 </nav>
@@ -38,8 +38,8 @@
         <h1 class="h-display rv">Sell What<br>You Don't Own.</h1>
         <p class="hero__sub rv rv-2">The borrow desk and short interest tape for Robinhood Chain.</p>
         <div class="hero__cta rv rv-3">
-          <a class="btn btn--lg" href="#band">Get early access</a>
-          <a class="btn btn--ghost btn--lg" href="#how">How it works</a>
+          <a class="btn btn--lg" href="#tape">See the live tape</a>
+          <a class="btn btn--ghost btn--lg" href="#status">What's actually built</a>
         </div>
       </div>
 
@@ -47,32 +47,32 @@
         <div class="gauge">
           <div class="gauge__top">
             <div>
-              <div class="gauge__tk">$NASDANQ</div>
-              <div class="gauge__label">Squeeze Score</div>
+              <div class="gauge__tk" id="heroTk">—</div>
+              <div class="gauge__label">Setup Score · v0 proxy</div>
             </div>
-            <div class="gauge__score mono" id="heroScore">0</div>
+            <div class="gauge__score mono" id="heroScore">—</div>
           </div>
 
           <div class="bars" id="heroBars">
             <div>
-              <div class="bar__row"><span>Short interest</span><span class="mono hot" data-v="18.4%">—</span></div>
-              <div class="bar__track"><i class="bar__fill bar__fill--hot" data-w="74"></i></div>
+              <div class="bar__row"><span>Pool liquidity</span><span class="mono" data-k="poolEth">—</span></div>
+              <div class="bar__track"><i class="bar__fill" data-k="poolEth"></i></div>
             </div>
             <div>
-              <div class="bar__row"><span>Days to cover</span><span class="mono" data-v="6.2">—</span></div>
-              <div class="bar__track"><i class="bar__fill" data-w="62"></i></div>
+              <div class="bar__row"><span>Holders</span><span class="mono" data-k="holders">—</span></div>
+              <div class="bar__track"><i class="bar__fill" data-k="holders"></i></div>
             </div>
             <div>
-              <div class="bar__row"><span>Utilization</span><span class="mono" data-v="91%">—</span></div>
-              <div class="bar__track"><i class="bar__fill" data-w="91"></i></div>
+              <div class="bar__row"><span>Oracle depth</span><span class="mono" data-k="card">—</span></div>
+              <div class="bar__track"><i class="bar__fill" data-k="card"></i></div>
             </div>
             <div>
-              <div class="bar__row"><span>Borrow APR</span><span class="mono hot" data-v="248%">—</span></div>
-              <div class="bar__track"><i class="bar__fill bar__fill--hot" data-w="83"></i></div>
+              <div class="bar__row"><span>5m vs 30m TWAP</span><span class="mono hot" data-k="div">—</span></div>
+              <div class="bar__track"><i class="bar__fill bar__fill--hot" data-k="div"></i></div>
             </div>
           </div>
 
-          <div class="watch"><i class="pulse"></i> Squeeze Watch · score above 80</div>
+          <div class="watch" id="heroNote"><i class="pulse"></i> Reading Robinhood Chain…</div>
         </div>
       </div>
     </div>
@@ -129,12 +129,12 @@
         <!-- pane 1 : vault -->
         <div class="pane on" data-i="0">
           <div class="win">
-            <div class="win__bar"><div class="win__dots"><i></i><i></i><i></i></div><div class="win__title">vault — squeeze</div></div>
+            <div class="win__bar"><div class="win__dots"><i></i><i></i><i></i></div><div class="win__title">vault — squeeze</div><span class="badge badge--mock win__badge">mockup · not deployed</span></div>
             <div class="win__body">
               <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:4px">
                 <div>
-                  <div class="h-3">$HMM vault</div>
-                  <div class="micro" style="margin-top:3px">4.28M HMM supplied · 3.89M on loan</div>
+                  <div class="h-3">$HMM vault <span class="micro" style="color:var(--t-3)">· illustrative</span></div>
+                  <div class="micro" style="margin-top:3px">Illustrative figures — no vault exists</div>
                 </div>
                 <div style="text-align:right">
                   <div class="mono hot" style="font-size:26px;letter-spacing:-.03em">312%</div>
@@ -176,10 +176,10 @@
         <!-- pane 2 : short ticket -->
         <div class="pane" data-i="1">
           <div class="win">
-            <div class="win__bar"><div class="win__dots"><i></i><i></i><i></i></div><div class="win__title">short — squeeze</div></div>
+            <div class="win__bar"><div class="win__dots"><i></i><i></i><i></i></div><div class="win__title">short — squeeze</div><span class="badge badge--mock win__badge">mockup · not deployed</span></div>
             <div class="win__body">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-                <div class="h-3">Open short · $HMM</div>
+                <div class="h-3">Open short · $HMM <span class="micro" style="color:var(--t-3)">· illustrative</span></div>
                 <div class="seg" id="seg">
                   <button class="on">1.5×</button><button>2×</button><button>3×</button>
                 </div>
@@ -211,53 +211,53 @@
           </div>
         </div>
 
-        <!-- pane 3 : oracle -->
+        <!-- pane 3 : oracle — live -->
         <div class="pane" data-i="2">
           <div class="win">
-            <div class="win__bar"><div class="win__dots"><i></i><i></i><i></i></div><div class="win__title">oracle — squeeze</div></div>
+            <div class="win__bar"><div class="win__dots"><i></i><i></i><i></i></div><div class="win__title">oracle — squeeze</div><span class="badge badge--live win__badge"><i class="dot"></i>live chain data</span></div>
             <div class="win__body">
-              <div class="h-3">Manipulation attempt · blocked</div>
-              <div class="micro" style="margin-top:4px;margin-bottom:14px">Wallet 0x4a…c7 bought 41 ETH into a 52 ETH pool</div>
-
-              <svg viewBox="0 0 480 170" style="width:100%;height:170px;display:block" role="img" aria-label="Spot price spike versus TWAP">
-                <g stroke="var(--line)" stroke-width="1">
-                  <line x1="0" y1="42" x2="480" y2="42"/><line x1="0" y1="85" x2="480" y2="85"/><line x1="0" y1="128" x2="480" y2="128"/>
-                </g>
-                <line x1="0" y1="52" x2="480" y2="52" stroke="var(--hot)" stroke-width="1" stroke-dasharray="4 4"/>
-                <text x="6" y="45" font-size="10" fill="#e5484d" font-family="JetBrains Mono, monospace">liquidation threshold</text>
-                <path d="M0,124 L120,120 L200,118 L248,20 L268,26 L300,112 L380,116 L480,114" fill="none" stroke="var(--t-4)" stroke-width="1.6"/>
-                <path d="M0,126 L120,124 L200,123 L248,116 L300,113 L380,118 L480,117" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/>
-                <circle cx="248" cy="20" r="4" fill="none" stroke="var(--hot)" stroke-width="1.6"/>
-              </svg>
-
-              <div style="display:flex;gap:18px;margin-top:12px" class="micro">
-                <span style="display:flex;align-items:center;gap:6px"><i style="width:12px;height:2px;background:var(--t-4);display:block"></i>Spot</span>
-                <span style="display:flex;align-items:center;gap:6px"><i style="width:12px;height:2px;background:var(--ink);display:block"></i>30m TWAP</span>
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px">
+                <div>
+                  <div class="h-3" id="orTk">—</div>
+                  <div class="micro" style="margin-top:3px">Read from the pool's own observation buffer</div>
+                </div>
+                <div style="text-align:right">
+                  <div class="mono" id="orCard" style="font-size:24px;letter-spacing:-.03em">—</div>
+                  <div class="micro">observations stored</div>
+                </div>
               </div>
 
-              <div style="margin-top:16px">
-                <div class="kv"><span>5m TWAP breach</span><span class="hot">yes</span></div>
-                <div class="kv"><span>30m TWAP breach</span><span class="up">no</span></div>
-                <div class="kv"><span>Positions liquidated</span><span>0</span></div>
-                <div class="kv"><span>Attacker cost</span><span class="hot">−6.8 ETH</span></div>
+              <div style="margin-top:18px">
+                <div class="kv"><span>30m TWAP</span><span class="mono" id="orT30">—</span></div>
+                <div class="kv"><span>5m TWAP</span><span class="mono" id="orT5">—</span></div>
+                <div class="kv"><span>Spot</span><span class="mono" id="orSpot">—</span></div>
+                <div class="kv"><span>5m vs 30m divergence</span><span class="mono hot" id="orDiv">—</span></div>
+              </div>
+
+              <div class="watch" style="margin-top:18px" id="orVerdict"><i class="pulse"></i> loading…</div>
+
+              <div class="srcnote">
+                Both windows come from one <code class="mono">observe()</code> call on the live pool.
+                Reproduce it: <code class="mono">node indexer/verify-oracle.mjs</code>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- pane 4 : the tape -->
+        <!-- pane 4 : the tape — live -->
         <div class="pane" data-i="3" id="tape">
           <div class="win">
-            <div class="win__bar"><div class="win__dots"><i></i><i></i><i></i></div><div class="win__title">tape — squeeze</div></div>
+            <div class="win__bar"><div class="win__dots"><i></i><i></i><i></i></div><div class="win__title">tape — squeeze</div><span class="badge badge--live win__badge"><i class="dot"></i>live chain data</span></div>
             <div class="win__body win__body--flush">
               <table class="tape">
                 <thead>
-                  <tr><th>Token</th><th>Score</th><th>SI %</th><th>DTC</th><th>Util.</th><th>Borrow</th></tr>
+                  <tr><th>Token</th><th>Setup</th><th>Pool ETH</th><th>Holders</th><th>Obs.</th><th>5m/30m</th></tr>
                 </thead>
-                <tbody id="tapeBody"></tbody>
+                <tbody id="tapeBody"><tr><td colspan="6" style="text-align:center;color:var(--t-3)">loading…</td></tr></tbody>
               </table>
             </div>
           </div>
+          <div class="srcnote" id="tapeMeta">—</div>
         </div>
 
       </div>
@@ -268,93 +268,61 @@
 <!-- ================= DARK : FEED + FORMULA ================= -->
 <section class="section dark">
   <div class="shell">
-    <span class="tag rv">The Feed</span>
-    <h2 class="h-1 rv rv-2" style="margin:22px 0 14px;max-width:20ch">Every liquidation,<br>in public.</h2>
-    <p class="lede rv rv-2" style="max-width:50ch;margin-bottom:50px">Cascades are the most-shared content in crypto. Squeeze owns the feed they come out of.</p>
+    <span class="tag rv">The indexer</span>
+    <h2 class="h-1 rv rv-2" style="margin:22px 0 14px;max-width:20ch">Run it yourself.</h2>
+    <p class="lede rv rv-2" style="max-width:52ch;margin-bottom:50px">This is the actual output of the indexer in this repo, reading Robinhood Chain. Every market is checked against the listing criteria in the spec — nothing is hand-picked.</p>
 
     <div class="dark-grid rv rv-3" id="darkGrid">
       <div class="win">
-        <div class="win__bar"><div class="win__dots"><i></i><i></i><i></i></div><div class="win__title">feed — squeeze</div></div>
+        <div class="win__bar"><div class="win__dots"><i></i><i></i><i></i></div><div class="win__title">build-tape.mjs — squeeze</div><span class="badge badge--live win__badge"><i class="dot"></i>real output</span></div>
         <div class="term" id="term"></div>
       </div>
 
       <div class="win">
-        <div class="win__bar"><div class="win__dots"><i></i><i></i><i></i></div><div class="win__title">score.ts — squeeze</div></div>
+        <div class="win__bar"><div class="win__dots"><i></i><i></i><i></i></div><div class="win__title">score.mjs — squeeze</div></div>
         <div class="formula">
-<span class="c-dim">// one number. one threshold.</span><br>
-<span class="c-dim">// the calendar writes itself.</span><br><br>
-<b>score</b> = <span class="w">40</span> · norm(shortInterest, <span class="c-dim">0, 25</span>)<br>
-<span style="opacity:0">score </span>+ <span class="w">25</span> · norm(daysToCover,&nbsp;&nbsp; <span class="c-dim">0, 10</span>)<br>
-<span style="opacity:0">score </span>+ <span class="w">20</span> · norm(utilization,&nbsp;&nbsp; <span class="c-dim">0, 1</span>)<br>
-<span style="opacity:0">score </span>+ <span class="w">15</span> · norm(borrowAPR,&nbsp;&nbsp;&nbsp;&nbsp; <span class="c-dim">0, 300</span>)<br><br>
-<span class="c-dim">// above 80 →</span><br>
-<span class="c-hot">SQUEEZE&nbsp;WATCH</span> <span class="c-dim">· pinned · auto-posted</span><span class="caret"></span>
+<span class="c-dim">// v0. NOT short interest — that</span><br>
+<span class="c-dim">// needs the borrow market to exist.</span><br><br>
+<b>setup</b> = <span class="w">35</span> · thinness&nbsp;&nbsp;&nbsp;&nbsp; <span class="c-dim">pool/mcap, inverted</span><br>
+<span style="opacity:0">setup </span>+ <span class="w">25</span> · concentration <span class="c-dim">top-10 share</span><br>
+<span style="opacity:0">setup </span>+ <span class="w">20</span> · volatility&nbsp;&nbsp; <span class="c-dim">5m vs 30m</span><br>
+<span style="opacity:0">setup </span>+ <span class="w">20</span> · turnover&nbsp;&nbsp;&nbsp;&nbsp; <span class="c-dim">24h vol/mcap</span><br><br>
+<span class="c-dim">// missing input → weight dropped,</span><br>
+<span class="c-dim">// never guessed. below 60% cover:</span><br>
+<span class="c-hot">null</span><span class="caret"></span>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ================= FEATURE CARDS ================= -->
-<section class="section">
+<!-- ================= STATUS ================= -->
+<section class="section" id="status">
   <div class="shell">
-    <span class="tag rv">Built on Squeeze</span>
-    <h2 class="h-1 rv rv-2" style="margin:22px 0 50px;max-width:18ch">The other side<br>of the trade.</h2>
+    <span class="tag rv">Status</span>
+    <h2 class="h-1 rv rv-2" style="margin:22px 0 12px;max-width:22ch">What is built,<br>and what isn't.</h2>
+    <p class="lede rv rv-2" style="max-width:54ch;margin-bottom:44px">Half this page renders live chain data. The other half is a mockup of a protocol with no deployed contracts. Every panel says which it is.</p>
 
-    <div class="cards">
-      <div class="card rv">
-        <h3 class="h-2">Short a rug</h3>
-        <p class="card__b">You can see it dying and you can finally do something about it. Borrow, sell, wait, buy back cheaper. Loss capped at your collateral, always.</p>
-        <div class="card__art">
-          <div class="mini">
-            <div class="kv"><span>Entry · 30m TWAP</span><span>0.0000237</span></div>
-            <div class="kv"><span>Mark</span><span class="up">0.0000094</span></div>
-            <div class="kv"><span>Unrealised</span><span class="up">+1.62 ETH</span></div>
-          </div>
-        </div>
+    <div class="statusgrid">
+      <div class="statuscard rv">
+        <span class="badge badge--live"><i class="dot"></i>live</span>
+        <h3>The Tape (v0)</h3>
+        <p>Real. An indexer reads pool reserves, holder counts and the oracle buffer from Robinhood Chain, checks each token against the listing criteria, and computes a Setup Score. Runs from this repo with no API key.</p>
       </div>
+      <div class="statuscard rv rv-2">
+        <span class="badge badge--live"><i class="dot"></i>live</span>
+        <h3>Oracle verification</h3>
+        <p>Real. <code class="mono">verify-oracle.mjs</code> pulls both TWAP windows out of a live pool and rejects any pool whose observation buffer is too shallow to produce a genuine average.</p>
+      </div>
+      <div class="statuscard rv rv-3">
+        <span class="badge badge--mock">not built</span>
+        <h3>The Desk</h3>
+        <p>Mockup. No contracts are deployed or written. Short interest, days to cover, utilization and borrow rates do not exist yet — and are shown as blank rather than filled with plausible numbers.</p>
+      </div>
+    </div>
 
-      <div class="card rv rv-2">
-        <h3 class="h-2">Earn on a bag you can't sell</h3>
-        <p class="card__b">Down 90% and stuck? Lend it. The people who want to short it pay you in ETH for the privilege — and if it goes to zero you still get your tokens back.</p>
-        <div class="card__art">
-          <div class="mini" style="display:flex;align-items:flex-end;justify-content:space-between;gap:14px">
-            <div>
-              <div class="micro">Supply APR</div>
-              <div class="mono hot" style="font-size:30px;letter-spacing:-.03em;line-height:1.1">312%</div>
-            </div>
-            <svg class="spark" viewBox="0 0 160 54" preserveAspectRatio="none">
-              <path d="M2,48 L26,45 L50,41 L74,36 L98,28 L122,17 L146,6"/>
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <div class="card rv rv-3">
-        <h3 class="h-2">Days to cover, live</h3>
-        <p class="card__b">The metric that ran 2021. How many days of average volume it would take every short to close. Published per token, updating every block.</p>
-        <div class="card__art">
-          <div class="mini">
-            <div style="display:flex;align-items:baseline;justify-content:space-between">
-              <span class="micro">$NASDANQ</span>
-              <span class="mono hot" style="font-size:22px;letter-spacing:-.03em">6.2d</span>
-            </div>
-            <div class="bar__track" style="margin-top:12px"><i class="bar__fill bar__fill--hot" style="transform:scaleX(.62)"></i></div>
-            <div class="micro" style="margin-top:9px">18.4% of float on loan</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card rv rv-4">
-        <h3 class="h-2">Squeeze Watch</h3>
-        <p class="card__b">Score crosses 80 and the alert fires itself — pinned on the site, posted to X, pushed to anyone watching that token. No announcements to write.</p>
-        <div class="card__art">
-          <div class="mini" style="display:grid;gap:9px">
-            <div class="bubble">Score on $NASDANQ just crossed 84. Utilization 91%, borrow at 248%.</div>
-            <div class="bubble bubble--me">Notify me under 40 too</div>
-          </div>
-        </div>
-      </div>
+    <div class="srcnote rv" style="margin-top:26px">
+      There is no token, no presale and no contract address. Anyone showing you one for Squeeze is not us.
     </div>
   </div>
 </section>
@@ -404,7 +372,7 @@
       </div>
       <div class="q">
         <button class="q__h">Which tokens can I short?<i class="q__ico"></i></button>
-        <div class="q__a"><div><p>Any token that has graduated on Pons, with its liquidity locked in the Uniswap V3 pool it launched in, holds at least 30 ETH of liquidity and 500 holders, is more than 72 hours past graduation, and clears the manipulation cost floor. Listings are curated by the team in v1 and become permissionless with automatic caps in v2 — we would rather say that plainly than pretend v1 is already trustless.</p></div></div>
+        <div class="q__a"><div><p>Right now, none — the Desk does not exist. When it does: any token that graduated on Pons with liquidity locked in the Uniswap V3 pool it launched in, holding at least 30 ETH of liquidity and 500 holders, more than 72 hours past graduation, with an observation buffer deep enough for a genuine 30-minute TWAP, and clearing the manipulation cost floor.</p><p>The indexer already evaluates every one of those criteria against live chain state — five markets currently pass. Listings would be curated by the team in v1 and permissionless with automatic caps in v2; we would rather say that plainly than pretend v1 is already trustless.</p></div></div>
       </div>
       <div class="q">
         <button class="q__h">Is this perps?<i class="q__ico"></i></button>
@@ -412,7 +380,7 @@
       </div>
       <div class="q">
         <button class="q__h">Do I need to short anything to use it?<i class="q__ico"></i></button>
-        <div class="q__a"><div><p>No, and most people won't. The Tape is free and public: short interest, days to cover, utilization and borrow rates on every listed token. Borrow APR is the honest price of fear on a token — it is worth reading even if you only ever buy.</p></div></div>
+        <div class="q__a"><div><p>No, and most people won't. Today the Tape publishes what can actually be measured without a borrow market: pool depth, holder counts, oracle depth and the gap between the 5-minute and 30-minute TWAP, combined into a Setup Score. It is free, public and needs no wallet.</p><p>Short interest, days to cover, utilization and borrow APR are shown blank — not because the feature is unfinished, but because those numbers are meaningless until real supply is being borrowed and sold. They arrive with the Desk, not before.</p></div></div>
       </div>
       <div class="q">
         <button class="q__h">What does $SQUEEZE do?<i class="q__ico"></i></button>
@@ -425,10 +393,10 @@
 <!-- ================= CTA + FOOTER ================= -->
 <section class="dark" id="band">
   <div class="shell band">
-    <h2 class="band__t rv">Get on Squeeze</h2>
-    <p class="lede rv rv-2" style="margin:20px auto 34px;max-width:44ch">Early access opens with five curated markets on Robinhood Chain.</p>
+    <h2 class="band__t rv">Check the work</h2>
+    <p class="lede rv rv-2" style="margin:20px auto 34px;max-width:48ch">Five markets on Robinhood Chain currently clear every listing criterion. The script that decides that is in the repo — run it yourself.</p>
     <div class="rv rv-3" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-      <a class="btn btn--lg" href="#">Request access</a>
+      <a class="btn btn--lg" href="https://github.com/eurotropica01-spec/squeeze">Read the source</a>
       <a class="btn btn--ghost btn--lg" href="../docs/index.html">Read the docs</a>
     </div>
   </div>
@@ -437,7 +405,7 @@
     <div class="foot__in">
       <a class="brand" href="#top" style="color:var(--d-1)"><i class="brand__mark" style="background:#fff"></i> Squeeze</a>
       <div class="foot__links">
-        <a href="#how">How it works</a><a href="../docs/index.html">Docs</a><a href="#risk">Risk</a><a href="#faq">FAQ</a><a href="https://github.com/eurotropica01-spec/squeeze">GitHub</a><a href="#">X</a>
+        <a href="#how">How it works</a><a href="../docs/index.html">Docs</a><a href="#risk">Risk</a><a href="#faq">FAQ</a><a href="https://github.com/eurotropica01-spec/squeeze">GitHub</a>
       </div>
     </div>
     <p class="foot__note">Squeeze is an independent protocol on Robinhood Chain. Not affiliated with, endorsed by, or connected to Robinhood Markets, Inc. or Pons. Shorting leveraged positions in illiquid markets can result in total loss of collateral. Figures shown on this page are illustrative.</p>

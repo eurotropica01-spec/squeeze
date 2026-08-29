@@ -169,6 +169,38 @@ h1, h2, h3, h4 { font-weight: 500; }
 .hot { color: var(--hot); }
 .up  { color: var(--up); }
 
+/* ---------- provenance badges -------------------------------------------
+   Every panel on this page is labelled: either it renders live chain data,
+   or it is a mockup of something not yet built. No unlabelled middle ground. */
+
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 9px; border-radius: var(--pill);
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0;
+  white-space: nowrap;
+}
+.badge--live { background: rgba(34,160,74,.10); color: #1a6b33; }
+.badge--live .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--up); animation: pulse 2s ease-in-out infinite; }
+.badge--mock { background: var(--paper-3); color: var(--t-3); }
+
+.win__badge { margin-left: auto; }
+.win__bar .win__title { margin-right: 0; }
+
+.srcnote {
+  margin-top: 14px; font-size: 12px; color: var(--t-3);
+}
+.srcnote a { border-bottom: 1px solid var(--line-2); }
+.srcnote a:hover { color: var(--t-1); border-bottom-color: var(--t-2); }
+
+.statusgrid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 18px; }
+.statuscard {
+  border: 1px solid var(--line); border-radius: var(--r-card); padding: 24px;
+}
+.statuscard h3 { font-size: 18px; letter-spacing: -.016em; margin-top: 12px; }
+.statuscard p { font-size: 14px; color: var(--t-2); margin-top: 7px; }
+
+@media (max-width: 900px) { .statusgrid { grid-template-columns: 1fr; } }
+
 /* ---------- nav ------------------------------------------------------- */
 
 .nav {

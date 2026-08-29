@@ -43,6 +43,7 @@
       <a href="#cardinality">Observation cardinality</a>
       <a href="#blocks">100ms blocks</a>
       <a href="#nothing-new">Nothing here is new</a>
+      <a href="#verify">Verify it yourself</a>
     </div>
     <div class="side__group">
       <div class="side__t">Markets</div>
@@ -73,7 +74,7 @@
           <tr><td>Chain</td><td>Robinhood Chain — Arbitrum Orbit L2, chainId <span class="num">4663</span>, ETH gas, ~100ms blocks</td></tr>
           <tr><td>Venue</td><td>Uniswap <strong>V3</strong>, 1% fee tier, TOKEN/WETH — the pool each Pons token launched in</td></tr>
           <tr><td>Collateral</td><td>ETH only (v1)</td></tr>
-          <tr><td>Status</td><td><span class="pill pill--hot">pre-deployment</span> — spec complete, contracts unwritten</td></tr>
+          <tr><td>Status</td><td><span class="pill pill--ok">tape v0 live</span> <span class="pill pill--hot">desk not built</span> — the indexer reads live chain state; no contracts are deployed</td></tr>
         </tbody>
       </table>
     </div>
@@ -231,33 +232,41 @@ ago[<span class="n">2</span>] = <span class="n">0</span>;     <span class="c">//
     <h2 id="cardinality">Observation cardinality</h2>
     <p>This is the part that actually bites, and it is the reason listing is not instantaneous.</p>
 
-    <div class="note note--warn">
-      <div class="note__t">A fresh V3 pool has no history</div>
-      <p>A new pool stores <strong>one</strong> observation and overwrites it every block. Calling <code>observe(1800)</code> on such a pool reverts — the history does not exist.</p>
-    </div>
-
-    <p>Anyone may increase it, permissionlessly, up to a maximum of 65535:</p>
+    <p>A pool left at the Uniswap V3 default stores <strong>one</strong> observation and overwrites it every block. Anyone may raise that, permissionlessly, up to 65535:</p>
 
 <pre><code>pool.<span class="w">increaseObservationCardinalityNext</span>(<span class="n">2048</span>);</code></pre>
 
-    <p>So this is a <strong>mandatory step in the listing process</strong>, and Squeeze pays for it. Sizing depends on how many blocks-containing-a-swap need to be spanned to cover 1800 seconds. Robinhood Chain produces <strong>~100ms blocks</strong> — up to 18,000 blocks per window — but an observation is only written in blocks where a swap actually occurs:</p>
+    <p>What actually happens on Pons pools is more interesting than the textbook case. Measured live by the indexer in this repo:</p>
 
     <div class="tw">
       <table>
-        <thead><tr><th>Activity</th><th>Swaps per 30 min</th><th>Cardinality</th><th>Approx. gas</th></tr></thead>
+        <thead><tr><th>Market</th><th>Pool</th><th>Observations stored</th><th>Usable 30m TWAP</th></tr></thead>
         <tbody>
-          <tr><td>Quiet</td><td class="num">~300</td><td class="num">512</td><td class="num">~10M</td></tr>
-          <tr><td>Active</td><td class="num">~1,500</td><td class="num">2,048</td><td class="num">~41M</td></tr>
-          <tr><td>Squeeze Watch</td><td class="num">~6,000</td><td class="num">8,192</td><td class="num">~164M</td></tr>
+          <tr><td>$PONS</td><td class="num">480 ETH</td><td class="num">20,000</td><td><span class="pill pill--ok">yes</span></td></tr>
+          <tr><td>$HMM</td><td class="num">181 ETH</td><td class="num">14,400</td><td><span class="pill pill--ok">yes</span></td></tr>
+          <tr><td>$YOLO</td><td class="num">83 ETH</td><td class="num">1,801</td><td><span class="pill pill--ok">yes</span></td></tr>
+          <tr><td>$NASDANQ</td><td class="num">36 ETH</td><td class="num">1,400</td><td><span class="pill pill--ok">yes</span></td></tr>
+          <tr><td>$LOCK</td><td class="num">13 ETH</td><td class="num">120</td><td><span class="pill pill--ok">yes</span></td></tr>
+          <tr><td>$IMAGINE</td><td class="num">4 ETH</td><td class="num">1</td><td><span class="pill pill--hot">no</span></td></tr>
+          <tr><td>$KANSO</td><td class="num">0.6 ETH</td><td class="num">1</td><td><span class="pill pill--hot">no</span></td></tr>
         </tbody>
       </table>
     </div>
 
-    <p><strong>2048 is the default; 8192 for the hottest markets.</strong> Each slot costs a cold SSTORE (~20k gas) at call time, so larger increases must be split across several transactions — they will not fit in one block. On an L2 the absolute cost is small; the operational constraint is the chunking, not the price.</p>
+    <p>Cardinality tracks traction. The liquid markets already carry deep buffers — nobody has to provision them, it has happened organically — while dormant micro-caps sit at the default of 1. So the listing step is real and still necessary, but for exactly the tokens that clear the other criteria, it is usually already done.</p>
+
+    <div class="note note--warn">
+      <div class="note__t">The trap: cardinality 1 does not revert</div>
+      <p>A pool with a single observation still <em>answers</em> <code>observe(1800)</code>. It extrapolates from that one stored point using the current tick, so the call succeeds and returns a number that looks like a TWAP.</p>
+      <p>It is not one. It carries no history, both windows collapse onto spot, and the dual-bound check silently degrades into "is spot above the threshold" — the exact manipulation surface the design exists to close. A naive integration would never notice, because nothing errors.</p>
+      <p>Squeeze therefore gates on the buffer itself, not on whether the call succeeded: <code>cardinality &gt; 1</code> is checked before any returned price is trusted. <code>verify-oracle.mjs</code> in the repo rejects such pools, and the tape marks them ineligible.</p>
+    </div>
+
+    <p>Where provisioning <em>is</em> needed, sizing depends on how many blocks-containing-a-swap must be spanned to cover 1800 seconds. Robinhood Chain produces <strong>~100ms blocks</strong> — up to 18,000 per window — but an observation is only written in blocks where a swap occurs. Each slot costs a cold SSTORE (~20k gas) at call time, so a large increase must be split across several transactions; on an L2 the constraint is the chunking, not the price.</p>
 
     <div class="note">
       <div class="note__t">Warm-up</div>
-      <p>Raising cardinality does not make the window usable immediately — the pool still has to accumulate 30 minutes of observations first. This is the real reason behind the <strong>≥72h since graduation</strong> listing criterion. The waiting period was already there for other reasons; it covers this one for free.</p>
+      <p>Raising cardinality does not make the window usable immediately — the pool still has to accumulate 30 minutes of observations. This is covered for free by the <strong>≥72h since graduation</strong> criterion, which was already there for other reasons.</p>
     </div>
 
     <h2 id="blocks">What 100ms blocks change</h2>
@@ -291,6 +300,32 @@ ago[<span class="n">2</span>] = <span class="n">0</span>;     <span class="c">//
       <li><strong>No integration is required and nobody can revoke access.</strong> Squeeze needs no cooperation from the Pons team or from any token's developer. For a product that some token teams would rather did not exist, that is not a detail — it is the whole reason it can ship.</li>
       <li><strong>It is auditable against known patterns.</strong> The novelty is in the application — pointing a lending market at launchpad tokens and publishing the resulting short interest — not in the machinery. That makes it a matter of weeks, not quarters.</li>
     </ul>
+
+    <h2 id="verify">Verify it yourself</h2>
+    <p>Nothing on this page has to be taken on trust. Two scripts in the repo read Robinhood Chain directly, with no API key, no indexer service and no dependencies beyond Node 18+.</p>
+
+<pre><code><span class="c"># prove a real TWAP exists on a live Pons pool</span>
+node indexer/verify-oracle.mjs
+
+<span class="c"># rebuild the tape from live chain state</span>
+node indexer/build-tape.mjs</code></pre>
+
+    <p><code>verify-oracle.mjs</code> resolves the token's pool through the Pons V3 factory, reads <code>slot0</code>, pulls both TWAP windows from <code>observe()</code>, and prints a pass/fail line per claim. Point it at any token:</p>
+
+<pre><code>node indexer/verify-oracle.mjs 0x<span class="c">&lt;token&gt;</span></code></pre>
+
+    <div class="note note--ok">
+      <div class="note__t">What a passing run looks like</div>
+      <p>Against $PONS it reports a 20,000-slot observation buffer, a 30-minute TWAP and a 5-minute TWAP that genuinely differ, and roughly 480 ETH of pool liquidity — everything the liquidation path needs, available today, on contracts that already exist.</p>
+      <p>Against a dormant micro-cap it fails on the cardinality check and refuses to print a price at all.</p>
+    </div>
+
+    <p><code>build-tape.mjs</code> writes <a class="link" href="https://github.com/eurotropica01-spec/squeeze/blob/main/data/tape.json">data/tape.json</a>, which is what the tape on the website renders. Every row carries its own inputs — pool depth, holder count, observation cardinality, TWAP divergence — so any score can be recomputed by hand from the same file.</p>
+
+    <div class="note">
+      <div class="note__t">Absence is not zero</div>
+      <p>A missing input drops its weight from the score rather than being replaced by a guess, and a token below 60% input coverage gets <code>null</code> instead of a number. Short-interest fields are <code>null</code> everywhere by design: they cannot exist until the Desk does, and filling them with plausible figures would make the whole dataset worthless.</p>
+    </div>
 
     <h2 id="listing">Listing criteria</h2>
     <p>A token opens a market only when it satisfies every condition:</p>
@@ -388,11 +423,24 @@ norm(x, lo, hi) = clamp((x - lo) / (hi - lo), <span class="n">0</span>, <span cl
 
     <h2 id="roadmap">Roadmap</h2>
 
-    <h3>v0 — The Tape, before the Desk</h3>
-    <p>Short interest cannot exist before a borrow market does. So v0 publishes a <strong>Squeeze Setup Score</strong> built from proxy data available today: holder concentration, LP depth against market cap, net sell pressure over 24h, distance from ATH, and dormant whale wallets waking up.</p>
-    <div class="note">
-      <div class="note__t">Labelled honestly</div>
-      <p>v0 is a <em>pre-squeeze screener</em>, not short interest. That distinction is stated on the product itself. It exists to build an audience and a brand before a single contract is deployed.</p>
+    <h3>v0 — The Tape, before the Desk <span class="pill pill--ok">shipped</span></h3>
+    <p>Short interest cannot exist before a borrow market does. So v0 publishes a <strong>Setup Score</strong> built from proxies that are computable today, straight from chain state:</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Component</th><th>Weight</th><th>Source</th></tr></thead>
+        <tbody>
+          <tr><td>Float thinness — pool ETH against market cap, inverted</td><td class="num">35</td><td>pool reserves</td></tr>
+          <tr><td>Holder concentration — top 10, excluding pool and locker</td><td class="num">25</td><td>Blockscout</td></tr>
+          <tr><td>Short-term volatility — 5m against 30m TWAP</td><td class="num">20</td><td><code>observe()</code></td></tr>
+          <tr><td>Turnover — 24h volume against market cap</td><td class="num">20</td><td>Blockscout</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note note--warn">
+      <div class="note__t">This is not short interest</div>
+      <p>v0 is a <em>pre-squeeze screener</em>. It ranks how violently a token could move on buying pressure — it does not and cannot measure how much supply is actually borrowed and sold, because no supply is borrowed and sold yet. That distinction is stated on the product itself, not just here.</p>
     </div>
 
     <h3>v1 — The Desk</h3>

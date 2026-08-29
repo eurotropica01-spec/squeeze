@@ -1,6 +1,11 @@
 /* ==========================================================================
-   SQUEEZE — interactions
-   Transform/opacity only. Everything degrades to static if JS is off.
+   SQUEEZE — site interactions
+
+   Live panels render data/tape.json, produced by indexer/build-tape.mjs from
+   Robinhood Chain. If that file cannot be loaded, panels say so and stay
+   empty. There is deliberately no fallback dataset: showing invented numbers
+   when the real ones are unavailable is the failure mode this whole page
+   exists to avoid.
    ========================================================================== */
 
 (() => {
@@ -9,6 +14,17 @@
   const $  = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const nf = (n, d = 0) =>
+    n === null || n === undefined || !Number.isFinite(n)
+      ? '—'
+      : n.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+  const pct = (n, d = 2) =>
+    n === null || n === undefined || !Number.isFinite(n) ? '—' : `${n >= 0 ? '+' : ''}${n.toFixed(d)}%`;
+
+  const sci = (n) => (Number.isFinite(n) ? n.toExponential(4) : '—');
+  const clamp01 = (x) => Math.min(1, Math.max(0, x));
 
   /* ---------- scroll reveal ------------------------------------------- */
 
@@ -19,7 +35,6 @@
       io.unobserve(e.target);
     });
   }, { rootMargin: '0px 0px -12% 0px', threshold: 0.08 });
-
   $$('.rv').forEach((el) => io.observe(el));
 
   /* ---------- sticky nav ----------------------------------------------- */
@@ -34,46 +49,6 @@
       ticking = false;
     });
   }, { passive: true });
-
-  /* ---------- copy contract address ------------------------------------ */
-
-  const copyBtn = $('#copyAddr');
-  const addrText = $('#addrText');
-  const ADDR = '0x7c4E00000000000000000000000000000000',
-        SHORT = '0x7c4E…9aF1';
-  copyBtn?.addEventListener('click', async () => {
-    try { await navigator.clipboard.writeText(ADDR); } catch { /* clipboard blocked */ }
-    addrText.textContent = 'Copied';
-    setTimeout(() => { addrText.textContent = SHORT; }, 1400);
-  });
-
-  /* ---------- hero: score count-up + bars ------------------------------ */
-
-  const scoreEl = $('#heroScore');
-  const barsWrap = $('#heroBars');
-
-  const runHero = () => {
-    // bars
-    $$('.bar__fill[data-w]', barsWrap).forEach((el, i) => {
-      setTimeout(() => { el.style.transform = `scaleX(${+el.dataset.w / 100})`; }, 120 + i * 90);
-    });
-    // numeric labels
-    $$('[data-v]', barsWrap).forEach((el, i) => {
-      setTimeout(() => { el.textContent = el.dataset.v; }, 200 + i * 90);
-    });
-    // score
-    const target = 84;
-    if (reduced) { scoreEl.textContent = target; return; }
-    const t0 = performance.now(), dur = 1100;
-    const tick = (t) => {
-      const p = Math.min((t - t0) / dur, 1);
-      const eased = 1 - Math.pow(1 - p, 3);
-      scoreEl.textContent = Math.round(eased * target);
-      if (p < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  };
-  setTimeout(runHero, 380);
 
   /* ---------- statement rotor ------------------------------------------ */
 
@@ -91,25 +66,12 @@
     }, 2100);
   }
 
-  /* ---------- marquee --------------------------------------------------- */
-
-  const MARQ = [
-    ['NASDANQ', '18.4%'], ['HMM', '14.1%'], ['YOLO', '11.7%'], ['WIRE', '9.3%'],
-    ['LOCK', '8.8%'], ['DICE', '7.4%'], ['BULL', '6.1%'], ['NEUT', '5.2%'],
-    ['IMAGINE', '4.6%'], ['HOOJA', '3.9%'], ['KANSO', '3.1%'], ['MKTCAT', '2.4%'],
-  ];
-  const marquee = $('#marquee');
-  if (marquee) {
-    const row = MARQ.map(([t, si]) =>
-      `<div class="chip"><b>$${t}</b><span class="si">${si} SI</span></div>`).join('');
-    marquee.innerHTML = row + row; // duplicated for the -50% loop
-  }
-
-  /* ---------- how it works: steps <-> panes ---------------------------- */
+  /* ---------- steps <-> panes ------------------------------------------ */
 
   const steps = $$('#steps .step');
   const panes = $$('#panes .pane');
-  let active = 0, autoTimer = null;
+  let active = 0;
+  let autoTimer = null;
 
   const setStep = (n) => {
     active = n;
@@ -117,158 +79,208 @@
     panes.forEach((p, i) => p.classList.toggle('on', i === n));
   };
 
-  steps.forEach((s) => s.addEventListener('click', () => {
-    setStep(+s.dataset.i);
-    clearInterval(autoTimer);
-    autoTimer = null;
-  }));
+  const stopAuto = () => { clearInterval(autoTimer); autoTimer = null; };
 
-  // gentle auto-advance, only while the section is on screen, stops on click
+  steps.forEach((s) => s.addEventListener('click', () => { setStep(+s.dataset.i); stopAuto(); }));
+
   const howSection = $('#how');
   if (howSection && !reduced) {
     new IntersectionObserver((entries) => {
       entries.forEach((e) => {
         if (e.isIntersecting && autoTimer === null) {
           autoTimer = setInterval(() => setStep((active + 1) % steps.length), 5200);
-        } else if (!e.isIntersecting && autoTimer) {
-          clearInterval(autoTimer); autoTimer = null;
-        }
+        } else if (!e.isIntersecting) stopAuto();
       });
     }, { threshold: 0.35 }).observe(howSection);
   }
 
-  /* ---------- short ticket --------------------------------------------- */
+  /* The Tape and The Oracle are panes, not sections — deep links to them
+     have to select the pane as well as scroll to it. */
+  const focusPane = (hash) => {
+    const idx = { '#tape': 3, '#oracle': 2 }[hash];
+    if (idx === undefined) return;
+    setStep(idx);
+    stopAuto();
+  };
+  addEventListener('hashchange', () => focusPane(location.hash));
+  $$('a[href="#tape"], a[href="#oracle"]').forEach((a) =>
+    a.addEventListener('click', () => setTimeout(() => focusPane(a.getAttribute('href')), 0)));
+
+  /* ---------- short ticket (mockup, but the maths is the real formula) -- */
 
   const slider = $('#collSlider');
-  const NOTIONAL = 2.940;       // ETH proceeds from the sale
-  const LIQ_THRESHOLD = 1.20;   // liquidates at 120% collateral ratio
+  const NOTIONAL = 2.940;
+  const LIQ_THRESHOLD = 1.20;
 
   const paintTicket = (ratioPct) => {
     const ratio = ratioPct / 100;
-    const coll  = NOTIONAL * ratio;
-    const hf    = ratio / LIQ_THRESHOLD;
-    const move  = (hf - 1) * 100;
-
-    $('#tColl').textContent = coll.toFixed(3) + ' ETH';
+    const hf = ratio / LIQ_THRESHOLD;
+    $('#tColl').textContent = (NOTIONAL * ratio).toFixed(3) + ' ETH';
     const hfEl = $('#tHf');
     hfEl.textContent = hf.toFixed(2);
     hfEl.className = 'hf__v ' + (hf < 1.15 ? 'hot' : 'up');
-    $('#tLiq').textContent = `Liq. price +${move.toFixed(0)}%`;
-
-    $$('#seg button').forEach((b) => {
-      b.classList.toggle('on', Math.round(parseFloat(b.textContent) * 100) === ratioPct);
-    });
+    $('#tLiq').textContent = `Liq. price +${((hf - 1) * 100).toFixed(0)}%`;
+    $$('#seg button').forEach((b) =>
+      b.classList.toggle('on', Math.round(parseFloat(b.textContent) * 100) === ratioPct));
   };
 
   slider?.addEventListener('input', () => paintTicket(+slider.value));
-
   $$('#seg button').forEach((b) => b.addEventListener('click', () => {
-    const pct = Math.round(parseFloat(b.textContent) * 100);
-    slider.value = pct;
-    paintTicket(pct);
+    const p = Math.round(parseFloat(b.textContent) * 100);
+    slider.value = p;
+    paintTicket(p);
   }));
-
   if (slider) paintTicket(+slider.value);
 
-  /* ---------- the tape -------------------------------------------------- */
+  /* ====================================================================== */
+  /*  Live data                                                             */
+  /* ====================================================================== */
 
-  const ROWS = [
-    { t: 'NASDANQ', s: 84, si: 18.4, d: 6.2, u: 91, b: 248 },
-    { t: 'HMM',     s: 76, si: 14.1, d: 4.8, u: 87, b: 312 },
-    { t: 'YOLO',    s: 61, si: 11.7, d: 3.1, u: 74, b: 96  },
-    { t: 'WIRE',    s: 54, si:  9.3, d: 2.9, u: 68, b: 71  },
-    { t: 'LOCK',    s: 47, si:  8.8, d: 2.2, u: 61, b: 58  },
-    { t: 'DICE',    s: 39, si:  7.4, d: 1.8, u: 52, b: 44  },
-    { t: 'BULL',    s: 28, si:  6.1, d: 1.1, u: 38, b: 31  },
-    { t: 'NEUT',    s: 19, si:  5.2, d: 0.7, u: 24, b: 23  },
-  ];
-
-  const tapeBody = $('#tapeBody');
-  const scoreClass = (s) => s >= 80 ? 'score score--hi' : s >= 60 ? 'score score--mid' : 'score';
-
-  const paintTape = () => {
-    tapeBody.innerHTML = ROWS.map((r) => `
-      <tr>
-        <td>$${r.t}</td>
-        <td><span class="${scoreClass(r.s)}">${r.s}</span></td>
-        <td class="hot">${r.si.toFixed(1)}%</td>
-        <td>${r.d.toFixed(1)}d</td>
-        <td>${r.u}%</td>
-        <td class="hot">${r.b}%</td>
-      </tr>`).join('');
+  const unavailable = (msg) => {
+    $('#navBlock').textContent = 'offline';
+    $('#heroNote').innerHTML = `<i class="pulse"></i> ${msg}`;
+    $('#tapeBody').innerHTML =
+      `<tr><td colspan="6" style="text-align:center;color:var(--t-3)">${msg}</td></tr>`;
+    $('#tapeMeta').textContent = msg;
+    $('#orVerdict').innerHTML = `<i class="pulse"></i> ${msg}`;
+    $('#term').innerHTML = `<span class="l in c-dim">${msg}</span>`;
   };
 
-  if (tapeBody) {
-    paintTape();
-    // small live drift so the table reads as a running market
-    if (!reduced) setInterval(() => {
-      ROWS.forEach((r) => {
-        r.si = Math.max(0.5, r.si + (Math.random() - 0.5) * 0.18);
-        r.b  = Math.max(8, Math.round(r.b + (Math.random() - 0.5) * 7));
+  const scoreClass = (s) => (s === null ? 'score' : s >= 60 ? 'score score--hi' : s >= 35 ? 'score score--mid' : 'score');
+
+  function renderTape(d) {
+    const rows = d.tokens;
+
+    /* --- nav + meta --- */
+    $('#navBlock').textContent = `block ${nf(d.block)}`;
+
+    const age = Math.round((Date.now() - new Date(d.generatedAt)) / 60000);
+    $('#tapeMeta').innerHTML =
+      `${d.counts.eligible} of ${d.counts.total} tokens meet the listing criteria · ` +
+      `indexed at block ${nf(d.block)}, ${age < 1 ? 'just now' : `${age} min ago`} · ` +
+      `<a href="https://github.com/eurotropica01-spec/squeeze/blob/main/data/tape.json">raw data</a>`;
+
+    /* --- hero: highest-scoring eligible market --- */
+    const lead = rows.filter((r) => r.eligible && r.setupScore !== null)[0] || rows[0];
+    if (lead) {
+      $('#heroTk').textContent = '$' + lead.symbol;
+      $('#heroNote').innerHTML = lead.eligible
+        ? '<i class="pulse"></i> Meets every listing criterion'
+        : '<i class="pulse"></i> Watchlist · ' + lead.failedCriteria.join(', ');
+
+      const bars = {
+        poolEth: { v: `${nf(lead.poolEth, 1)} ETH`, w: clamp01(lead.poolEth / 500) },
+        holders: { v: nf(lead.holders), w: clamp01((lead.holders || 0) / 45000) },
+        card:    { v: nf(lead.observationCardinality), w: clamp01((lead.observationCardinality || 0) / 20000) },
+        div:     { v: pct(lead.divergencePct), w: clamp01(Math.abs(lead.divergencePct || 0) / 10) },
+      };
+      Object.entries(bars).forEach(([k, { v, w }], i) => {
+        const label = $(`#heroBars [data-k="${k}"].mono`);
+        const fill = $(`#heroBars i.bar__fill[data-k="${k}"]`);
+        setTimeout(() => {
+          if (label) label.textContent = v;
+          if (fill) fill.style.transform = `scaleX(${w})`;
+        }, 120 + i * 90);
       });
-      paintTape();
-    }, 2600);
-  }
 
-  /* ---------- terminal feed --------------------------------------------- */
+      const target = lead.setupScore ?? 0;
+      const el = $('#heroScore');
+      if (reduced || !target) { el.textContent = lead.setupScore ?? '—'; }
+      else {
+        const t0 = performance.now();
+        const tick = (t) => {
+          const p = Math.min((t - t0) / 1100, 1);
+          el.textContent = Math.round((1 - (1 - p) ** 3) * target);
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }
+    }
 
-  const FEED = [
-    ['c-dim', '$ squeeze feed --live'],
-    ['c-dim', '  streaming Robinhood Chain · block 4,182,097'],
-    ['', ''],
-    ['c-hot', '! LIQUIDATED  $NASDANQ short · 4.21 ETH · HF 0.97'],
-    ['c-dim', '  keeper 0x3f…a1 · bonus 0.336 ETH'],
-    ['c-w',   '> OPEN        $HMM short · 124,000 HMM @ 0.0000237'],
-    ['c-up',  '+ SUPPLY      812K HMM deposited · util 87% → 91%'],
-    ['c-am',  '~ RATE        $HMM borrow 248% → 312% APR'],
-    ['c-hot', '! LIQUIDATED  $NASDANQ short · 1.84 ETH · HF 0.94'],
-    ['c-hot', '! LIQUIDATED  $NASDANQ short · 7.02 ETH · HF 0.91'],
-    ['c-dim', '  cascade · 3 positions · 13.07 ETH · 41 s'],
-    ['', ''],
-    ['c-am',  '★ SQUEEZE WATCH  $NASDANQ score 79 → 84'],
-    ['c-dim', '  posted to x.com/squeezetape'],
-    ['c-up',  '+ CLOSE       $YOLO short · +0.62 ETH realised'],
-    ['c-dim', '  fees to protocol 0.061 ETH · 80% → burn'],
-  ];
+    /* --- marquee: real pool depth per market --- */
+    const marquee = $('#marquee');
+    if (marquee) {
+      const row = rows.map((t) =>
+        `<div class="chip"><b>$${t.symbol}</b><span class="si">${nf(t.poolEth, 1)} ETH</span></div>`).join('');
+      marquee.innerHTML = row + row;
+    }
 
-  const term = $('#term');
+    /* --- oracle pane: the lead market's actual TWAP windows --- */
+    if (lead) {
+      $('#orTk').textContent = '$' + lead.symbol + ' / WETH';
+      $('#orCard').textContent = nf(lead.observationCardinality);
+      $('#orT30').textContent = sci(lead.twap30) + ' ETH';
+      $('#orT5').textContent = sci(lead.twap5) + ' ETH';
+      $('#orSpot').textContent = sci(lead.spot) + ' ETH';
+      $('#orDiv').textContent = pct(lead.divergencePct, 3);
+      $('#orVerdict').innerHTML = lead.oracleReady
+        ? '<i class="pulse"></i> Both windows served from stored observations'
+        : `<i class="pulse"></i> ${lead.oracleNote}`;
+    }
 
-  const playFeed = () => {
+    /* --- the tape --- */
+    $('#tapeBody').innerHTML = rows.map((t) => {
+      const dim = t.eligible ? '' : ' style="opacity:.55"';
+      const obs = t.oracleReady
+        ? nf(t.observationCardinality)
+        : `<span class="hot" title="${t.oracleNote || ''}">${nf(t.observationCardinality)}</span>`;
+      return `<tr${dim}>
+        <td>$${t.symbol}</td>
+        <td><span class="${scoreClass(t.setupScore)}">${t.setupScore ?? '—'}</span></td>
+        <td>${nf(t.poolEth, 1)}</td>
+        <td>${nf(t.holders)}</td>
+        <td>${obs}</td>
+        <td class="${Math.abs(t.divergencePct || 0) > 3 ? 'hot' : ''}">${pct(t.divergencePct, 1)}</td>
+      </tr>`;
+    }).join('');
+
+    /* --- terminal: the indexer's actual verdicts --- */
+    const term = $('#term');
+    const lines = [
+      ['c-dim', '$ node indexer/build-tape.mjs'],
+      ['c-dim', `  chain ${d.chainId} · block ${nf(d.block)}`],
+      ['', ''],
+    ];
+    rows.forEach((t) => {
+      const tag = t.eligible ? 'ELIGIBLE' : 'watch   ';
+      const cls = t.eligible ? 'c-up' : 'c-dim';
+      lines.push([cls,
+        `  ${tag} $${t.symbol.padEnd(8)} ${String(nf(t.poolEth, 1)).padStart(8)} ETH  ` +
+        `obs ${String(nf(t.observationCardinality)).padStart(6)}  ` +
+        `score ${t.setupScore === null ? ' n/a' : String(t.setupScore).padStart(4)}`]);
+      if (!t.eligible) lines.push(['c-hot', `           ${t.failedCriteria.join(', ')}`]);
+    });
+    lines.push(['', '']);
+    lines.push(['c-am', `  ${d.counts.eligible} of ${d.counts.total} eligible under SPEC.md section 4`]);
+
     term.innerHTML = '';
-    FEED.forEach(([cls, text], i) => {
+    lines.forEach(([cls, text], i) => {
       const line = document.createElement('span');
       line.className = 'l ' + cls;
-      line.textContent = text || ' ';
+      line.textContent = text || ' ';
       term.appendChild(line);
-      setTimeout(() => line.classList.add('in'), reduced ? 0 : 90 + i * 260);
+      setTimeout(() => line.classList.add('in'), reduced ? 0 : 60 + i * 90);
     });
     const caret = document.createElement('span');
     caret.className = 'l in';
     caret.innerHTML = '<span class="caret"></span>';
     term.appendChild(caret);
-  };
-
-  if (term) {
-    let played = false;
-    new IntersectionObserver((entries) => {
-      entries.forEach((e) => {
-        if (!e.isIntersecting || played) return;
-        played = true;
-        playFeed();
-        if (!reduced) setInterval(playFeed, FEED.length * 260 + 6000);
-      });
-    }, { threshold: 0.25 }).observe(term);
   }
+
+  fetch('../data/tape.json', { cache: 'no-cache' })
+    .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+    .then(renderTape)
+    .catch(() => unavailable('Live data unavailable — serve the repo over HTTP to load it'));
 
   /* ---------- faq -------------------------------------------------------- */
 
   $$('#faqList .q').forEach((q) => {
-    const head = $('.q__h', q);
-    head.addEventListener('click', () => {
+    $('.q__h', q).addEventListener('click', () => {
       const open = q.classList.contains('on');
       $$('#faqList .q').forEach((o) => o.classList.remove('on'));
       q.classList.toggle('on', !open);
     });
   });
 
+  if (location.hash) setTimeout(() => focusPane(location.hash), 60);
 })();

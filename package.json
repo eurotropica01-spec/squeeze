@@ -1,0 +1,15 @@
+{
+  "name": "squeeze",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The borrow desk and short interest tape for Robinhood Chain",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "tape": "node indexer/build-tape.mjs",
+    "verify": "node indexer/verify-oracle.mjs",
+    "serve": "python -m http.server 3040 --bind 127.0.0.1"
+  },
+  "repository": { "type": "git", "url": "https://github.com/eurotropica01-spec/squeeze.git" },
+  "license": "MIT"
+}

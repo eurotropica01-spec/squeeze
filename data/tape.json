@@ -1,0 +1,527 @@
+{
+  "$schema": "squeeze-tape-v0",
+  "generatedAt": "2026-08-29T14:06:48.475Z",
+  "chainId": 4663,
+  "block": 49211612,
+  "rpc": "https://rpc.mainnet.chain.robinhood.com",
+  "note": "v0 Setup Score on proxy data. This is NOT short interest — that requires the borrow market to exist. Short-interest fields are null by design.",
+  "model": {
+    "weights": {
+      "thinness": 35,
+      "concentration": 25,
+      "volatility": 20,
+      "turnover": 20
+    },
+    "ranges": {
+      "thinness": [
+        0.001,
+        0.05
+      ],
+      "concentration": [
+        0.1,
+        0.7
+      ],
+      "volatility": [
+        0,
+        5
+      ],
+      "turnover": [
+        0,
+        0.5
+      ]
+    },
+    "minCoverage": 0.6,
+    "windows": {
+      "long": 1800,
+      "short": 300
+    },
+    "listingCriteria": {
+      "minPoolEth": 30,
+      "minHolders": 500,
+      "feeTier": 10000
+    }
+  },
+  "counts": {
+    "total": 11,
+    "eligible": 5
+  },
+  "contracts": {
+    "factory": "0xA5aAb3F0c6EeadF30Ef1D3Eb997108E976351feB",
+    "locker": "0x736D76699C26D0d966744cAe304C000d471f7F35",
+    "v3Factory": "0x1f7d7550B1b028f7571E69A784071F0205FD2EfA",
+    "positionManager": "0x73991a25C818Bf1f1128dEAaB1492D45638DE0D3",
+    "swapRouter": "0xCaf681a66D020601342297493863E78C959E5cb2",
+    "quoterV2": "0x33e885eD0Ec9bF04EcfB19341582aADCb4c8A9E7",
+    "weth": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73"
+  },
+  "tokens": [
+    {
+      "eligible": true,
+      "failedCriteria": [],
+      "symbol": "PONS",
+      "name": "Pons",
+      "address": "0x39dBED3a2bd333467115dE45665cC57F813C4571",
+      "pool": "0x10cc6bd38112cac182db90b6a71d8bb5939526ba",
+      "decimals": 18,
+      "poolEth": 480.5318,
+      "tokensInPool": 6122426.7498801965,
+      "observationCardinality": 20000,
+      "oracleReady": true,
+      "oracleNote": null,
+      "twap30": 0.000084888015715391,
+      "twap5": 0.00008281380953042006,
+      "spot": 0.00008139235596854846,
+      "divergencePct": -2.443,
+      "totalSupply": 1000000000,
+      "marketCapEth": 84888.02,
+      "marketCapUsd": 137585303.1833495,
+      "volume24hUsd": null,
+      "holders": 42713,
+      "inputs": {
+        "thinness": 0.005661,
+        "concentration": 0.3682,
+        "volatility": 2.443,
+        "turnover": null
+      },
+      "normalised": {
+        "thinness": 0.9,
+        "concentration": 0.45,
+        "volatility": 0.49,
+        "turnover": null
+      },
+      "coverage": 0.8,
+      "setupScore": 66,
+      "shortInterestPct": null,
+      "daysToCover": null,
+      "utilization": null,
+      "borrowApr": null
+    },
+    {
+      "eligible": true,
+      "failedCriteria": [],
+      "symbol": "HMM",
+      "name": "Thinking Cat",
+      "address": "0x7FE995a80075dF3Dc8Ae11A9b82c7FE4202CD87f",
+      "pool": "0x2b0d0183d017c58b924401ca8ac362f6e01f0e9e",
+      "decimals": 18,
+      "poolEth": 181.2908,
+      "tokensInPool": 15062510.994578458,
+      "observationCardinality": 14400,
+      "oracleReady": true,
+      "oracleNote": null,
+      "twap30": 0.000009453117844573293,
+      "twap5": 0.000009261935352632292,
+      "spot": 0.000008645971320052526,
+      "divergencePct": -2.022,
+      "totalSupply": 1000000000,
+      "marketCapEth": 9453.12,
+      "marketCapUsd": 17401076.356723946,
+      "volume24hUsd": null,
+      "holders": 11818,
+      "inputs": {
+        "thinness": 0.019178,
+        "concentration": 0.2014,
+        "volatility": 2.022,
+        "turnover": null
+      },
+      "normalised": {
+        "thinness": 0.63,
+        "concentration": 0.17,
+        "volatility": 0.4,
+        "turnover": null
+      },
+      "coverage": 0.8,
+      "setupScore": 43,
+      "shortInterestPct": null,
+      "daysToCover": null,
+      "utilization": null,
+      "borrowApr": null
+    },
+    {
+      "eligible": true,
+      "failedCriteria": [],
+      "symbol": "YOLO",
+      "name": "YOLO",
+      "address": "0x62C71cd34a52c30d894419CBcc55Db2aFA8032eA",
+      "pool": "0x52fcb1d83191e06ef2d2d9f460609ca22a923558",
+      "decimals": 18,
+      "poolEth": 82.5814,
+      "tokensInPool": 22503467.879513845,
+      "observationCardinality": 1801,
+      "oracleReady": true,
+      "oracleNote": null,
+      "twap30": 0.0000032095915383822547,
+      "twap5": 0.0000031694940760035275,
+      "spot": 0.0000031611749425402997,
+      "divergencePct": -1.249,
+      "totalSupply": 1000000000,
+      "marketCapEth": 3209.59,
+      "marketCapUsd": 7515750.305347336,
+      "volume24hUsd": null,
+      "holders": 9473,
+      "inputs": {
+        "thinness": 0.02573,
+        "concentration": 0.196,
+        "volatility": 1.249,
+        "turnover": null
+      },
+      "normalised": {
+        "thinness": 0.5,
+        "concentration": 0.16,
+        "volatility": 0.25,
+        "turnover": null
+      },
+      "coverage": 0.8,
+      "setupScore": 33,
+      "shortInterestPct": null,
+      "daysToCover": null,
+      "utilization": null,
+      "borrowApr": null
+    },
+    {
+      "eligible": true,
+      "failedCriteria": [],
+      "symbol": "NASDANQ",
+      "name": "NASDANQ",
+      "address": "0x51Fb76BE80ab6daAa345D818f4E06441816b4fEa",
+      "pool": "0xdb1b57704d5122058ff925c1e765c17b21d065ec",
+      "decimals": 18,
+      "poolEth": 35.724,
+      "tokensInPool": 47408575.070489734,
+      "observationCardinality": 1400,
+      "oracleReady": true,
+      "oracleNote": null,
+      "twap30": 6.542362217750254e-7,
+      "twap5": 6.645213685915719e-7,
+      "spot": 6.812816404649959e-7,
+      "divergencePct": 1.572,
+      "totalSupply": 1000000000,
+      "marketCapEth": 654.24,
+      "marketCapUsd": 1492738.69996341,
+      "volume24hUsd": null,
+      "holders": 2409,
+      "inputs": {
+        "thinness": 0.054604,
+        "concentration": 0.2591,
+        "volatility": 1.572,
+        "turnover": null
+      },
+      "normalised": {
+        "thinness": 0,
+        "concentration": 0.27,
+        "volatility": 0.31,
+        "turnover": null
+      },
+      "coverage": 0.8,
+      "setupScore": 16,
+      "shortInterestPct": null,
+      "daysToCover": null,
+      "utilization": null,
+      "borrowApr": null
+    },
+    {
+      "eligible": true,
+      "failedCriteria": [],
+      "symbol": "WIRE",
+      "name": "wire bot",
+      "address": "0x8ECEA3d0E648DB646d824AA51EedeB16aC3d6878",
+      "pool": "0xd55246642dd114bc21db98c6f2261161a6158388",
+      "decimals": 18,
+      "poolEth": 37.9718,
+      "tokensInPool": 56508707.4839393,
+      "observationCardinality": 1024,
+      "oracleReady": true,
+      "oracleNote": null,
+      "twap30": 6.743008390968155e-7,
+      "twap5": 6.569141087092345e-7,
+      "spot": 6.488997422756288e-7,
+      "divergencePct": -2.578,
+      "totalSupply": 1000000000,
+      "marketCapEth": 674.3,
+      "marketCapUsd": 1438754.7387069548,
+      "volume24hUsd": null,
+      "holders": 3574,
+      "inputs": {
+        "thinness": 0.056313,
+        "concentration": 0.168,
+        "volatility": 2.578,
+        "turnover": null
+      },
+      "normalised": {
+        "thinness": 0,
+        "concentration": 0.11,
+        "volatility": 0.52,
+        "turnover": null
+      },
+      "coverage": 0.8,
+      "setupScore": 16,
+      "shortInterestPct": null,
+      "daysToCover": null,
+      "utilization": null,
+      "borrowApr": null
+    },
+    {
+      "eligible": false,
+      "failedCriteria": [
+        "pool < 30 ETH"
+      ],
+      "symbol": "BULL",
+      "name": "The Bull",
+      "address": "0x49bac47750F3dCdBa49350B5D74fd399e90f97C6",
+      "pool": "0x31b5a18780ec94b6202bf41cd0adc263bfeac7f0",
+      "decimals": 18,
+      "poolEth": 1.8402,
+      "tokensInPool": 1097185.0074517792,
+      "observationCardinality": 1400,
+      "oracleReady": true,
+      "oracleNote": null,
+      "twap30": 0.0000012768887234242672,
+      "twap5": 0.000001280017792836094,
+      "spot": 0.0000012885127518964647,
+      "divergencePct": 0.245,
+      "totalSupply": 999985146.2952253,
+      "marketCapEth": 1276.87,
+      "marketCapUsd": 2638346.5380595727,
+      "volume24hUsd": null,
+      "holders": 6966,
+      "inputs": {
+        "thinness": 0.001441,
+        "concentration": 0.2498,
+        "volatility": 0.245,
+        "turnover": null
+      },
+      "normalised": {
+        "thinness": 0.99,
+        "concentration": 0.25,
+        "volatility": 0.05,
+        "turnover": null
+      },
+      "coverage": 0.8,
+      "setupScore": 52,
+      "shortInterestPct": null,
+      "daysToCover": null,
+      "utilization": null,
+      "borrowApr": null
+    },
+    {
+      "eligible": false,
+      "failedCriteria": [
+        "pool < 30 ETH"
+      ],
+      "symbol": "DICE",
+      "name": "Dice Protocol",
+      "address": "0x3F9f0b6073Ee8c495Aed96869AF31850fED40FeB",
+      "pool": "0x399eae9d063cff3f0b05aa94256348c475001022",
+      "decimals": 18,
+      "poolEth": 5.4721,
+      "tokensInPool": 200818577.34639722,
+      "observationCardinality": 480,
+      "oracleReady": true,
+      "oracleNote": null,
+      "twap30": 3.77059700815976e-8,
+      "twap5": 3.469201899809623e-8,
+      "spot": 3.4100959428834066e-8,
+      "divergencePct": -7.993,
+      "totalSupply": 1000000000,
+      "marketCapEth": 37.71,
+      "marketCapUsd": 86889.38723200123,
+      "volume24hUsd": null,
+      "holders": 1080,
+      "inputs": {
+        "thinness": 0.145124,
+        "concentration": 0.2327,
+        "volatility": 7.993,
+        "turnover": null
+      },
+      "normalised": {
+        "thinness": 0,
+        "concentration": 0.22,
+        "volatility": 1,
+        "turnover": null
+      },
+      "coverage": 0.8,
+      "setupScore": 32,
+      "shortInterestPct": null,
+      "daysToCover": null,
+      "utilization": null,
+      "borrowApr": null
+    },
+    {
+      "eligible": false,
+      "failedCriteria": [
+        "pool < 30 ETH"
+      ],
+      "symbol": "LOCK",
+      "name": "HoodLock",
+      "address": "0xd5BF43f29BF7Aa5bb42Ae9e217b84B86EB7a4B94",
+      "pool": "0x4562ca679dccc38f2dd59d28b2ebfec99f507af2",
+      "decimals": 18,
+      "poolEth": 12.8903,
+      "tokensInPool": 99785001.37400484,
+      "observationCardinality": 120,
+      "oracleReady": true,
+      "oracleNote": null,
+      "twap30": 1.5113855006064366e-7,
+      "twap5": 1.4977550358918434e-7,
+      "spot": 1.472383032162018e-7,
+      "divergencePct": -0.902,
+      "totalSupply": 1000000000,
+      "marketCapEth": 151.14,
+      "marketCapUsd": 328948.9981144375,
+      "volume24hUsd": null,
+      "holders": 908,
+      "inputs": {
+        "thinness": 0.085288,
+        "concentration": 0.3431,
+        "volatility": 0.902,
+        "turnover": null
+      },
+      "normalised": {
+        "thinness": 0,
+        "concentration": 0.41,
+        "volatility": 0.18,
+        "turnover": null
+      },
+      "coverage": 0.8,
+      "setupScore": 17,
+      "shortInterestPct": null,
+      "daysToCover": null,
+      "utilization": null,
+      "borrowApr": null
+    },
+    {
+      "eligible": false,
+      "failedCriteria": [
+        "pool < 30 ETH",
+        "no usable TWAP"
+      ],
+      "symbol": "IMAGINE",
+      "name": "Imagine",
+      "address": "0xEDc62851Ef24928D934024f69bB073A305090663",
+      "pool": "0x4b54e8ed319fd091ed7503c946f404943c6eff1e",
+      "decimals": 18,
+      "poolEth": 4.3192,
+      "tokensInPool": 241794181.1987987,
+      "observationCardinality": 1,
+      "oracleReady": false,
+      "oracleNote": "cardinality 1 — observe() returns extrapolated spot, not a TWAP",
+      "twap30": null,
+      "twap5": null,
+      "spot": 2.3694518238240914e-8,
+      "divergencePct": null,
+      "totalSupply": 1000000000,
+      "marketCapEth": null,
+      "marketCapUsd": 61073.246262533954,
+      "volume24hUsd": null,
+      "holders": 1262,
+      "inputs": {
+        "thinness": null,
+        "concentration": 0.2938,
+        "volatility": null,
+        "turnover": null
+      },
+      "normalised": {
+        "thinness": null,
+        "concentration": 0.32,
+        "volatility": null,
+        "turnover": null
+      },
+      "coverage": 0.25,
+      "setupScore": null,
+      "shortInterestPct": null,
+      "daysToCover": null,
+      "utilization": null,
+      "borrowApr": null
+    },
+    {
+      "eligible": false,
+      "failedCriteria": [
+        "pool < 30 ETH",
+        "holders < 500",
+        "no usable TWAP"
+      ],
+      "symbol": "HOOJA",
+      "name": "Hooja",
+      "address": "0x64459A5592723ffBaceAff5799f4a9EdAc579C6c",
+      "pool": "0x1d59329d2d36f73c660e5dbe7ac760307a435b51",
+      "decimals": 18,
+      "poolEth": 2.9998,
+      "tokensInPool": 313444014.2313619,
+      "observationCardinality": 1,
+      "oracleReady": false,
+      "oracleNote": "cardinality 1 — observe() returns extrapolated spot, not a TWAP",
+      "twap30": null,
+      "twap5": null,
+      "spot": 1.399038162427853e-8,
+      "divergencePct": null,
+      "totalSupply": 1000000000,
+      "marketCapEth": null,
+      "marketCapUsd": 15762.583876995152,
+      "volume24hUsd": null,
+      "holders": 281,
+      "inputs": {
+        "thinness": null,
+        "concentration": 0.6458,
+        "volatility": null,
+        "turnover": null
+      },
+      "normalised": {
+        "thinness": null,
+        "concentration": 0.91,
+        "volatility": null,
+        "turnover": null
+      },
+      "coverage": 0.25,
+      "setupScore": null,
+      "shortInterestPct": null,
+      "daysToCover": null,
+      "utilization": null,
+      "borrowApr": null
+    },
+    {
+      "eligible": false,
+      "failedCriteria": [
+        "pool < 30 ETH",
+        "holders < 500",
+        "no usable TWAP"
+      ],
+      "symbol": "KANSO",
+      "name": "Kansoku Labs",
+      "address": "0xAB26d5B48bD07f1248A66FD817036f785078B51d",
+      "pool": "0xde815caaefb2e6b18ae247c1edb07f0137df48bb",
+      "decimals": 18,
+      "poolEth": 0.5924,
+      "tokensInPool": 700674132.29265,
+      "observationCardinality": 1,
+      "oracleReady": false,
+      "oracleNote": "cardinality 1 — observe() returns extrapolated spot, not a TWAP",
+      "twap30": null,
+      "twap5": null,
+      "spot": 2.798127759762418e-9,
+      "divergencePct": null,
+      "totalSupply": 1000000000,
+      "marketCapEth": null,
+      "marketCapUsd": 6748.036480659239,
+      "volume24hUsd": null,
+      "holders": 356,
+      "inputs": {
+        "thinness": null,
+        "concentration": 0.1932,
+        "volatility": null,
+        "turnover": null
+      },
+      "normalised": {
+        "thinness": null,
+        "concentration": 0.16,
+        "volatility": null,
+        "turnover": null
+      },
+      "coverage": 0.25,
+      "setupScore": null,
+      "shortInterestPct": null,
+      "daysToCover": null,
+      "utilization": null,
+      "borrowApr": null
+    }
+  ]
+}
