@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Squeeze Docs | Borrow desk and short interest tape for Robinhood Chain</title>
+<meta name="description" content="Protocol documentation for Squeeze: vaults, the borrow desk, TWAP oracle design, listing criteria, the Squeeze Score, and risk disclosures.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+
+<header class="top">
+  <button class="burger" id="burger" aria-label="Toggle navigation"><i></i></button>
+  <a class="brand" href="../site/index.html"><i class="brand__mark"></i> Squeeze <span class="brand__docs">docs</span></a>
+  <div class="top__right">
+    <a class="tlink tlink--hide" href="../site/index.html">Website</a>
+    <a class="tlink tlink--out" href="https://github.com/">GitHub</a>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="side" id="side">
+    <div class="side__group">
+      <div class="side__t">Introduction</div>
+      <a href="#overview">Overview</a>
+      <a href="#problem">Why this doesn't exist yet</a>
+    </div>
+    <div class="side__group">
+      <div class="side__t">Protocol</div>
+      <a href="#vaults">Vaults</a>
+      <a href="#rates">Interest rate model</a>
+      <a href="#desk">The Desk</a>
+      <a href="#liquidation">Liquidation</a>
+    </div>
+    <div class="side__group">
+      <div class="side__t">Feasibility</div>
+      <a href="#oracle">The oracle</a>
+      <a href="#cardinality">Observation cardinality</a>
+      <a href="#blocks">100ms blocks</a>
+      <a href="#nothing-new">Nothing here is new</a>
+    </div>
+    <div class="side__group">
+      <div class="side__t">Markets</div>
+      <a href="#listing">Listing criteria</a>
+      <a href="#caps">Borrow caps</a>
+      <a href="#tape">The Tape</a>
+      <a href="#score">Squeeze Score</a>
+    </div>
+    <div class="side__group">
+      <div class="side__t">Token &amp; risk</div>
+      <a href="#token">$SQUEEZE</a>
+      <a href="#risk">Risk disclosures</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#contracts">Contracts</a>
+    </div>
+  </aside>
+
+  <!-- ============ CONTENT ============ -->
+  <main class="main">
+  <article class="prose">
+
+    <h1 class="doc-h1">Squeeze Protocol</h1>
+    <p class="doc-lede">A collateralised borrow market for Pons tokens on Robinhood Chain, and the public short interest tape it produces.</p>
+
+    <div class="tw">
+      <table>
+        <tbody>
+          <tr><td>Chain</td><td>Robinhood Chain — Arbitrum Orbit L2, chainId <span class="num">4663</span>, ETH gas, ~100ms blocks</td></tr>
+          <tr><td>Venue</td><td>Uniswap <strong>V3</strong>, 1% fee tier, TOKEN/WETH — the pool each Pons token launched in</td></tr>
+          <tr><td>Collateral</td><td>ETH only (v1)</td></tr>
+          <tr><td>Status</td><td><span class="pill pill--hot">pre-deployment</span> — spec complete, contracts unwritten</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="overview">Overview</h2>
+    <p>Pons has launched more than 50,000 tokens on Robinhood Chain. Every one of those markets is <strong>long-only</strong>. There is no way to express a bearish view, no borrow market for memecoins, and consequently the single most powerful narrative primitive in retail trading — <strong>short interest</strong> — does not exist on this chain at all.</p>
+    <p>Squeeze is two products sharing one set of contracts:</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Component</th><th>What it is</th><th>Who uses it</th></tr></thead>
+        <tbody>
+          <tr><td><strong>The Desk</strong></td><td>Overcollateralised token borrowing, so a short can actually be placed</td><td>~5% of users</td></tr>
+          <tr><td><strong>The Tape</strong></td><td>Live, public short interest per token</td><td>~95% of users</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>The Desk earns the revenue. <strong>The Tape is the moat.</strong> Short interest, days to cover and borrow rates are numbers that people check daily and share compulsively, and they only exist once a real borrow market exists underneath them.</p>
+
+    <h2 id="problem">Why this doesn't exist yet</h2>
+    <p>Shorting illiquid tokens fails for four specific reasons. Each one has a countermeasure, and those countermeasures are the entire design.</p>
+
+    <h3>1. Nobody wants to lend</h3>
+    <p>No holder lends you their bag so you can dump it. The fix is to change what they get paid in: <strong>borrow interest is paid in ETH, not in tokens</strong>. A holder sitting on a position they can't exit earns real yield, and at high utilization that is a triple-digit APR.</p>
+    <p>This inverts the relationship. Demand to short a token becomes income for the people holding it — the more bearish the market gets, the better it pays to be long. That is the flywheel.</p>
+
+    <h3>2. Thin pools get manipulated</h3>
+    <p>One whale pumps the pool and every short is liquidated. Handled in three layers, covered in detail under <a class="link" href="#oracle">The oracle</a>.</p>
+
+    <h3>3. Losses are theoretically unbounded</h3>
+    <p>Positions are overcollateralised with hard liquidation, and loss is capped at the collateral in the position. No cross-margin in v1.</p>
+
+    <h3>4. What if the token goes to zero?</h3>
+    <div class="note note--ok">
+      <div class="note__t">Lenders are structurally protected</div>
+      <p>You lend tokens and you are repaid in tokens. If the token goes to zero, the short buys them back for dust and returns them — in token terms you are whole, and in ETH terms you were already at zero. You also keep every unit of ETH interest earned along the way.</p>
+      <p>Lenders are protected against precisely the scenario they fear most. That is the pitch, and it is not a marketing claim — it falls out of the mechanics.</p>
+    </div>
+
+    <h2 id="vaults">Vaults</h2>
+    <p>Each listed token gets its own lending vault. Supply is isolated per token: a failure in one market cannot touch another.</p>
+
+<pre><code><span class="k">deposit</span>(token, amount)   <span class="c">// -&gt; sTOKEN receipt</span>
+<span class="k">withdraw</span>(sToken, amount) <span class="c">// -&gt; TOKEN</span>
+<span class="k">claim</span>()                  <span class="c">// -&gt; accrued ETH interest</span></code></pre>
+
+    <ul>
+      <li>Depositors receive <code>sTOKEN</code>, a transferable ERC-20 receipt.</li>
+      <li>Interest accrues in <strong>ETH</strong> and is claimed separately from principal.</li>
+      <li>Withdrawals are limited to the vault's free (un-lent) balance. At 100% utilization you wait for a short to close — which is exactly the condition that drives the rate up and pulls shorts out.</li>
+    </ul>
+
+    <h2 id="rates">Interest rate model</h2>
+    <p>A standard two-slope utilization curve, deliberately steep above the kink.</p>
+
+<pre><code>U = borrowed / totalSupplied
+
+U &lt;= <span class="n">0.80</span>:  APR = <span class="n">20%</span>  + U * (<span class="n">80%</span> / <span class="n">0.80</span>)
+U &gt;  <span class="n">0.80</span>:  APR = <span class="n">100%</span> + (U - <span class="n">0.80</span>) * (<span class="n">400%</span> / <span class="n">0.20</span>)</code></pre>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Utilization</th><th>Borrow APR</th><th>Effect</th></tr></thead>
+        <tbody>
+          <tr><td class="num">0%</td><td class="num">20%</td><td>Base cost of carry</td></tr>
+          <tr><td class="num">80%</td><td class="num">100%</td><td>Kink — shorting gets expensive</td></tr>
+          <tr><td class="num">95%</td><td class="num">400%</td><td>Shorts are pushed to close</td></tr>
+          <tr><td class="num">100%</td><td class="num">500%</td><td>Cap</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>The steepness above the kink is a safety mechanism, not a revenue decision: it forces positions to unwind before a vault runs dry and lenders find themselves unable to withdraw.</p>
+
+    <h2 id="desk">The Desk</h2>
+
+<pre><code><span class="k">openShort</span>(token, borrowAmount, collateralETH) <span class="c">// -&gt; positionId</span>
+<span class="k">closeShort</span>(positionId)
+<span class="k">addCollateral</span>(positionId, amountETH)</code></pre>
+
+    <p>Opening a short is a single transaction:</p>
+    <ol>
+      <li>Trader posts ETH collateral — minimum <strong>150%</strong> of notional.</li>
+      <li>Protocol borrows TOKEN from the vault.</li>
+      <li>Protocol sells that TOKEN into the token's Uniswap V3 pool via <code>exactInputSingle</code>.</li>
+      <li>The ETH proceeds stay inside the position as additional collateral.</li>
+    </ol>
+
+<pre><code>position = { debt: X TOKEN, collateral: Y ETH, accrued: Z ETH }
+
+healthFactor = collateral / (debt * twap * <span class="n">1.20</span>)
+<span class="c">// liquidatable below 1.00, i.e. a 120% collateral ratio</span></code></pre>
+
+    <p>Interest is charged in ETH against the position's collateral, block by block. If interest alone eats the collateral down to the threshold, the position liquidates like any other. <strong>Waiting is never free.</strong></p>
+
+    <div class="note">
+      <div class="note__t">Worked example</div>
+      <p>Post 4.410 ETH against a 2.940 ETH notional short (150%). Health factor is <code>1.50 / 1.20 = 1.25</code>, so the position survives a <strong>25% adverse move</strong> before it becomes liquidatable. At 300% collateral, that headroom is 150%.</p>
+    </div>
+
+    <h2 id="liquidation">Liquidation</h2>
+    <p>A position is liquidatable when <code>HF &lt; 1</code> <strong>and</strong> both oracle windows confirm it (see below). Any address can liquidate.</p>
+    <ul>
+      <li>The keeper buys TOKEN, repays the debt, and takes an <strong>8% bonus</strong> from the collateral.</li>
+      <li>Any remainder returns to the trader.</li>
+      <li>Residual bad debt is absorbed by the Backstop Fund.</li>
+    </ul>
+
+    <div class="note note--warn">
+      <div class="note__t">Socialised loss — read this</div>
+      <p>If the Backstop Fund is exhausted, remaining bad debt is socialised across lenders <strong>in that specific vault</strong>, never protocol-wide. This is stated here rather than buried, because a lending protocol that surprises its lenders once does not get a second chance.</p>
+    </div>
+
+    <h2 id="oracle">The oracle</h2>
+    <p>Everything above depends on one question: <strong>does a manipulation-resistant price exist for a memecoin pool?</strong> It does, and the reason is a fortunate accident of which Uniswap version Pons happens to use.</p>
+
+    <h3>V3 has an oracle. V4 doesn't.</h3>
+    <p>Uniswap <strong>V4 removed built-in price oracles</strong> — observation tracking was moved out of the pool and into optional hooks. Had Pons graduated tokens into bare V4 pools, there would be no on-chain price history to read, and Squeeze would have had to build and incentivise its own checkpointing infrastructure before it could liquidate anything safely.</p>
+    <p>Pons runs on <strong>Uniswap V3</strong>. Every launch gets a dedicated TOKEN/WETH pool at the 1% fee tier, and V3 carries the TWAP oracle <em>inside the pool itself</em>. For this specific use case the older version is strictly better.</p>
+
+    <div class="note note--ok">
+      <div class="note__t">And there is no migration</div>
+      <p>Pons locks liquidity when the launch is created, and graduation at 4.2 ETH does not move anything — it is the same pool before and after. The venue a short sells into is permanent and cannot be pulled out from under the market.</p>
+      <div class="addr-line">locker · 0x736D76699C26D0d966744cAe304C000d471f7F35</div>
+    </div>
+
+    <h3>Reading the price</h3>
+    <p>Every V3 pool maintains a ring buffer of observations — <code>(blockTimestamp, tickCumulative, secondsPerLiquidityCumulative)</code>. You never read the array directly; you call <code>observe()</code>:</p>
+
+<pre><code><span class="k">uint32</span>[] <span class="k">memory</span> ago = <span class="k">new uint32</span>[](<span class="n">3</span>);
+ago[<span class="n">0</span>] = <span class="n">1800</span>;  <span class="c">// 30 minutes ago</span>
+ago[<span class="n">1</span>] = <span class="n">300</span>;   <span class="c">// 5 minutes ago</span>
+ago[<span class="n">2</span>] = <span class="n">0</span>;     <span class="c">// now</span>
+
+(<span class="k">int56</span>[] <span class="k">memory</span> tickCumulatives, ) = pool.<span class="w">observe</span>(ago);
+
+<span class="k">int24</span> twap30 = <span class="k">int24</span>((tickCumulatives[<span class="n">2</span>] - tickCumulatives[<span class="n">0</span>]) / <span class="n">1800</span>);
+<span class="k">int24</span> twap5  = <span class="k">int24</span>((tickCumulatives[<span class="n">2</span>] - tickCumulatives[<span class="n">1</span>]) / <span class="n">300</span>);
+<span class="c">// price = 1.0001 ^ tick</span></code></pre>
+
+    <p>Two properties make this workable:</p>
+    <ul>
+      <li><strong>Counterfactual observations.</strong> If your window boundary doesn't land on a block where an observation was written, the pool interpolates one for you. You never need an observation at exactly <code>t−1800s</code>.</li>
+      <li><strong>Geometric mean.</strong> Averaging the <em>tick</em> and then exponentiating yields a geometric mean price, which is far less sensitive to spikes than an arithmetic mean — exactly the property you want against a pumper.</li>
+    </ul>
+
+    <h3>Dual-bound liquidation</h3>
+    <p>Both windows come out of the same call, which costs one extra array element and no additional infrastructure. A position only becomes liquidatable when the <strong>30-minute and the 5-minute TWAP both breach</strong> the threshold.</p>
+    <p>A single-block pump therefore moves nothing except the attacker's balance — they pay full slippage into a 1% fee pool, arbitrage takes the other side, and no position closes. To actually trigger liquidations they would have to hold a false price for half an hour against every arbitrageur watching, which is a completely different and far more expensive problem.</p>
+
+    <h4>Manipulation cost floor</h4>
+    <p>On top of that, a token only lists if moving its price 50% costs <em>more than the total collateral at risk in that market</em>. Computed from pool reserves and re-checked before any borrow cap increase. If the attack is profitable in principle, the market simply doesn't open.</p>
+
+    <h2 id="cardinality">Observation cardinality</h2>
+    <p>This is the part that actually bites, and it is the reason listing is not instantaneous.</p>
+
+    <div class="note note--warn">
+      <div class="note__t">A fresh V3 pool has no history</div>
+      <p>A new pool stores <strong>one</strong> observation and overwrites it every block. Calling <code>observe(1800)</code> on such a pool reverts — the history does not exist.</p>
+    </div>
+
+    <p>Anyone may increase it, permissionlessly, up to a maximum of 65535:</p>
+
+<pre><code>pool.<span class="w">increaseObservationCardinalityNext</span>(<span class="n">2048</span>);</code></pre>
+
+    <p>So this is a <strong>mandatory step in the listing process</strong>, and Squeeze pays for it. Sizing depends on how many blocks-containing-a-swap need to be spanned to cover 1800 seconds. Robinhood Chain produces <strong>~100ms blocks</strong> — up to 18,000 blocks per window — but an observation is only written in blocks where a swap actually occurs:</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Activity</th><th>Swaps per 30 min</th><th>Cardinality</th><th>Approx. gas</th></tr></thead>
+        <tbody>
+          <tr><td>Quiet</td><td class="num">~300</td><td class="num">512</td><td class="num">~10M</td></tr>
+          <tr><td>Active</td><td class="num">~1,500</td><td class="num">2,048</td><td class="num">~41M</td></tr>
+          <tr><td>Squeeze Watch</td><td class="num">~6,000</td><td class="num">8,192</td><td class="num">~164M</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p><strong>2048 is the default; 8192 for the hottest markets.</strong> Each slot costs a cold SSTORE (~20k gas) at call time, so larger increases must be split across several transactions — they will not fit in one block. On an L2 the absolute cost is small; the operational constraint is the chunking, not the price.</p>
+
+    <div class="note">
+      <div class="note__t">Warm-up</div>
+      <p>Raising cardinality does not make the window usable immediately — the pool still has to accumulate 30 minutes of observations first. This is the real reason behind the <strong>≥72h since graduation</strong> listing criterion. The waiting period was already there for other reasons; it covers this one for free.</p>
+    </div>
+
+    <h2 id="blocks">What 100ms blocks change</h2>
+    <p>Fast blocks are the single biggest reason a memecoin lending market is viable on Robinhood Chain and was never viable on Ethereum L1.</p>
+    <p>Bad debt is created in the gap between "health factor breaks" and "keeper has closed the position". On L1 that gap is twelve seconds plus a gas auction. Here it is a few hundred milliseconds.</p>
+    <p>The sequencer also orders transactions <strong>first-come-first-served with no priority fees</strong>. There is no gas auction around liquidations: keepers compete on latency rather than on bribes, so the 8% bonus mostly reaches the keeper instead of being competed away to a block builder.</p>
+
+    <div class="note note--warn">
+      <div class="note__t">The honest caveat</div>
+      <p>It is a single sequencer, and L2 reorgs remain possible until a batch posts to Ethereum (roughly 13 minutes). Protocol state is internally consistent either way, but off-chain keepers and the UI must not treat a sequencer receipt as final.</p>
+    </div>
+
+    <h2 id="nothing-new">Nothing here is new</h2>
+    <p>This is the real answer to "how is this even possible": <strong>nothing has to be invented.</strong></p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Layer</th><th>What it actually is</th></tr></thead>
+        <tbody>
+          <tr><td>Lending</td><td>Aave/Compound logic — utilization curve, health factor, liquidation bonus</td></tr>
+          <tr><td>Pricing</td><td>A standard Uniswap V3 TWAP read</td></tr>
+          <tr><td>Execution</td><td>An ordinary <code>exactInputSingle</code> swap</td></tr>
+          <tr><td>Assets</td><td>ETH collateral, fixed-supply ERC-20 tokens</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>No new cryptography, no new AMM primitive, no hook, no custom pool. Squeeze touches the Pons pools in exactly two ways: <code>observe()</code> to read, and a swap to execute.</p>
+    <p>Two consequences follow, and both matter:</p>
+    <ul>
+      <li><strong>No integration is required and nobody can revoke access.</strong> Squeeze needs no cooperation from the Pons team or from any token's developer. For a product that some token teams would rather did not exist, that is not a detail — it is the whole reason it can ship.</li>
+      <li><strong>It is auditable against known patterns.</strong> The novelty is in the application — pointing a lending market at launchpad tokens and publishing the resulting short interest — not in the machinery. That makes it a matter of weeks, not quarters.</li>
+    </ul>
+
+    <h2 id="listing">Listing criteria</h2>
+    <p>A token opens a market only when it satisfies every condition:</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>#</th><th>Criterion</th><th>Reason</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td>Graduated on Pons (≥4.2 ETH), liquidity locked</td><td>LP cannot be pulled</td></tr>
+          <tr><td class="num">2</td><td>≥ 30 ETH pool liquidity</td><td>Buying back must be possible — well above the graduation threshold</td></tr>
+          <tr><td class="num">3</td><td>≥ 500 holders</td><td>Otherwise the "market" is three wallets</td></tr>
+          <tr><td class="num">4</td><td>≥ 72h since graduation</td><td>No fresh launches; also covers oracle warm-up</td></tr>
+          <tr><td class="num">5</td><td>Manipulation cost floor cleared</td><td>Attack must cost more than it can win</td></tr>
+          <tr><td class="num">6</td><td>Observation cardinality raised</td><td>Without it the TWAP does not exist</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <div class="note__t">Curation, stated plainly</div>
+      <p>v1 listings are curated by the team. v2 makes them permissionless with automatic caps. We would rather say that than describe v1 as trustless when it is not.</p>
+    </div>
+
+    <h2 id="caps">Borrow caps</h2>
+
+<pre><code>cap = <span class="k">min</span>( <span class="n">20%</span> of circulatingSupply,
+          k * <span class="k">sqrt</span>(poolLiquidityETH) )</code></pre>
+
+    <p>The square-root term makes the cap grow sublinearly with liquidity. A token with a high market cap but a thin pool gets a small market, which is the correct outcome — depth, not valuation, determines whether shorts can be closed.</p>
+
+    <h2 id="tape">The Tape</h2>
+    <p>Computed live per token, free and public, no wallet required.</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Metric</th><th>Definition</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Short Interest %</strong></td><td><code>borrowed / circulatingSupply</code></td></tr>
+          <tr><td><strong>Days to Cover</strong></td><td><code>borrowed / avgDailyVolume</code></td></tr>
+          <tr><td><strong>Utilization</strong></td><td><code>borrowed / totalSupplied</code></td></tr>
+          <tr><td><strong>Borrow APR</strong></td><td>From the rate curve — the market's price of fear</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Because Squeeze borrows and sells the <em>actual</em> token, real supply leaves the float. That is why the short interest number means something. A synthetic perp market would produce a figure nobody could verify.</p>
+
+    <h2 id="score">Squeeze Score</h2>
+
+<pre><code>score = <span class="n">40</span> * norm(shortInterestPct, <span class="c">0, 25</span>)
+      + <span class="n">25</span> * norm(daysToCover,     <span class="c">0, 10</span>)
+      + <span class="n">20</span> * norm(utilization,     <span class="c">0, 1</span>)
+      + <span class="n">15</span> * norm(borrowAPR,       <span class="c">0, 300</span>)
+
+norm(x, lo, hi) = clamp((x - lo) / (hi - lo), <span class="n">0</span>, <span class="n">1</span>)</code></pre>
+
+    <p>Above <strong>80</strong>, a token is flagged <span class="pill pill--hot">SQUEEZE WATCH</span>: pinned at the top of the site and auto-posted.</p>
+    <p>One shareable number with a threshold that generates its own events. The data produces the announcements, which means the protocol does not depend on someone writing marketing copy every week.</p>
+
+    <h3>The Feed</h3>
+    <p>Every liquidation is published: <code>$XYZ short liquidated — 4.21 ETH · HF 0.97</code>. Cascades are the most-shared content in crypto, and Squeeze owns the feed they come out of.</p>
+
+    <h2 id="token">$SQUEEZE</h2>
+    <p>Fixed supply, launched on Pons itself. No presale, no VC allocation.</p>
+    <p><strong>Fees:</strong> 10% of all borrow interest accrues to the protocol.</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Share</th><th>Destination</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td class="num">80%</td><td>Buyback &amp; burn</td><td>The exact model that took PONS itself up ~15× on this chain</td></tr>
+          <tr><td class="num">20%</td><td>Backstop Fund</td><td>Absorbs bad debt from failed liquidations</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p><strong>Staking</strong> reduces your borrow rate in tiers (5 / 10 / 15%) and grants early access to new listings. No governance theatre — two benefits that can be priced in ETH.</p>
+
+    <h2 id="risk">Risk disclosures</h2>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Risk</th><th>Severity</th><th>Mitigation</th></tr></thead>
+        <tbody>
+          <tr><td>Vertical pump on a thin pool outruns liquidation</td><td><span class="pill pill--hot">highest</span></td><td>sqrt-scaled caps, 150% initial margin, Backstop Fund</td></tr>
+          <tr><td>Vaults stay empty — no supply, no product</td><td><span class="pill">medium</span></td><td>Treasury-seeded launch, targeted at tokens whose holders want yield</td></tr>
+          <tr><td>Oracle manipulation</td><td><span class="pill">medium</span></td><td>Dual-window TWAP, manipulation cost floor</td></tr>
+          <tr><td>Backstop exhausted → socialised loss</td><td><span class="pill pill--hot">disclosed</span></td><td>Contained to the affected vault, never protocol-wide</td></tr>
+          <tr><td>Sequencer reorg before batch posting</td><td><span class="pill">low</span></td><td>Off-chain components wait for hard finality</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>The first row is the one that matters. Every parameter in this document exists to survive it, and it remains the most likely way the protocol fails.</p>
+
+    <h2 id="roadmap">Roadmap</h2>
+
+    <h3>v0 — The Tape, before the Desk</h3>
+    <p>Short interest cannot exist before a borrow market does. So v0 publishes a <strong>Squeeze Setup Score</strong> built from proxy data available today: holder concentration, LP depth against market cap, net sell pressure over 24h, distance from ATH, and dormant whale wallets waking up.</p>
+    <div class="note">
+      <div class="note__t">Labelled honestly</div>
+      <p>v0 is a <em>pre-squeeze screener</em>, not short interest. That distinction is stated on the product itself. It exists to build an audience and a brand before a single contract is deployed.</p>
+    </div>
+
+    <h3>v1 — The Desk</h3>
+    <p>Five curated markets, ETH collateral, real short interest replacing the proxies.</p>
+
+    <h3>v2 — Permissionless listings</h3>
+    <p>Automatic caps derived from the manipulation cost floor.</p>
+
+    <h3>v3 — Perps, or not</h3>
+    <p>The borrow desk is more defensible and less crowded than perps. Perps are an option, not an obligation.</p>
+
+    <h2 id="contracts">Contracts</h2>
+    <p>None deployed. Planned surface:</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Contract</th><th>Responsibility</th></tr></thead>
+        <tbody>
+          <tr><td><code>SqueezeCore</code></td><td>Positions, health factors, liquidation</td></tr>
+          <tr><td><code>SqueezeVault</code></td><td>Per-token lending vault, sTOKEN receipts</td></tr>
+          <tr><td><code>InterestRateModel</code></td><td>Utilization curve — pure functions</td></tr>
+          <tr><td><code>SqueezeOracle</code></td><td>Dual-window TWAP via <code>observe()</code>, manipulation cost floor</td></tr>
+          <tr><td><code>ListingRegistry</code></td><td>Listing criteria, borrow caps, curation</td></tr>
+          <tr><td><code>BackstopFund</code></td><td>Bad debt buffer</td></tr>
+          <tr><td><code>FeeRouter</code></td><td>80% buyback &amp; burn / 20% backstop</td></tr>
+          <tr><td><code>SqueezeToken</code></td><td>Fixed supply ERC-20</td></tr>
+          <tr><td><code>SqueezeStaking</code></td><td>Borrow rate tiers</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="foot">Squeeze is an independent protocol on Robinhood Chain. Not affiliated with, endorsed by, or connected to Robinhood Markets, Inc., Pons, or Uniswap Labs. Nothing in this document is financial advice. Shorting leveraged positions in illiquid markets can result in total loss of collateral. No contracts are deployed and no code has been audited.</p>
+
+  </article>
+  </main>
+</div>
+
+<script>
+(() => {
+  const links = [...document.querySelectorAll('.side a')];
+  const targets = links
+    .map(a => ({ a, el: document.querySelector(a.getAttribute('href')) }))
+    .filter(t => t.el);
+
+  // scrollspy
+  const spy = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const hit = targets.find(t => t.el === e.target);
+      if (!hit) return;
+      links.forEach(l => l.classList.remove('on'));
+      hit.a.classList.add('on');
+    });
+  }, { rootMargin: '-80px 0px -72% 0px', threshold: 0 });
+  targets.forEach(t => spy.observe(t.el));
+
+  // mobile drawer
+  const side = document.getElementById('side');
+  document.getElementById('burger').addEventListener('click', () => side.classList.toggle('open'));
+  side.addEventListener('click', e => { if (e.target.tagName === 'A') side.classList.remove('open'); });
+})();
+</script>
+</body>
+</html>

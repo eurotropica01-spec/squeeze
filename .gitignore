@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+out/
+cache/
+artifacts/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
