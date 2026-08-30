@@ -109,16 +109,25 @@
   /* ---------- short ticket (mockup, but the maths is the real formula) -- */
 
   const slider = $('#collSlider');
-  const NOTIONAL = 2.940;
-  const LIQ_THRESHOLD = 1.20;
+  const NOTIONAL = 2.940;       // ETH value of the borrowed tokens
+  const LIQ_THRESHOLD = 1.20;   // liquidatable below a 120% collateral ratio
 
   const paintTicket = (ratioPct) => {
     const ratio = ratioPct / 100;
-    const hf = ratio / LIQ_THRESHOLD;
-    $('#tColl').textContent = (NOTIONAL * ratio).toFixed(3) + ' ETH';
+    const posted = NOTIONAL * ratio;
+
+    /* Per SPEC.md 3.3, the ETH raised by selling the borrowed tokens stays
+       inside the position as collateral. Counting only the posted margin
+       understates the health factor badly: at 150% it reads 1.25 instead of
+       2.08, which would show a liquidation price less than half as far away
+       as it really is. */
+    const collateral = posted + NOTIONAL;
+    const hf = collateral / (NOTIONAL * LIQ_THRESHOLD);
+
+    $('#tColl').textContent = posted.toFixed(3) + ' ETH';
     const hfEl = $('#tHf');
     hfEl.textContent = hf.toFixed(2);
-    hfEl.className = 'hf__v ' + (hf < 1.15 ? 'hot' : 'up');
+    hfEl.className = 'hf__v ' + (hf < 1.35 ? 'hot' : 'up');
     $('#tLiq').textContent = `Liq. price +${((hf - 1) * 100).toFixed(0)}%`;
     $$('#seg button').forEach((b) =>
       b.classList.toggle('on', Math.round(parseFloat(b.textContent) * 100) === ratioPct));

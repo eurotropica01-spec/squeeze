@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Squeeze — how a short works</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#fff; --paper-2:#f7f7f7; --paper-3:#f2f2f2;
+    --ink:#262626;
+    --t-2:rgba(38,38,38,.60); --t-3:rgba(38,38,38,.45); --t-4:rgba(38,38,38,.28);
+    --line:rgba(38,38,38,.08); --line-2:rgba(38,38,38,.16);
+    --tint:#ffdcd3; --tint-2:#ffede8; --hot:#e5484d; --up:#22a04a;
+    --sans:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;
+    --mono:"JetBrains Mono","SF Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#e9e9e9;font-family:var(--sans);font-weight:500;-webkit-font-smoothing:antialiased}
+
+  .card{
+    width:1600px;height:900px;background:var(--paper);color:var(--ink);
+    padding:64px 72px 58px;display:flex;flex-direction:column;
+    letter-spacing:-.011em;
+  }
+
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:40px}
+  .title{font-size:56px;line-height:1;letter-spacing:-.035em}
+  .sub{font-size:19px;color:var(--t-3);margin-top:14px}
+  .meta{font-family:var(--mono);font-size:15px;color:var(--t-4);text-align:right;line-height:1.7}
+
+  /* four steps */
+  .steps{margin-top:52px;display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+  .step{padding:0 30px;position:relative}
+  .step:first-child{padding-left:0}
+  .step:last-child{padding-right:0}
+  .step + .step::before{
+    content:"";position:absolute;left:0;top:6px;bottom:14px;width:1px;background:var(--line);
+  }
+  .step__n{font-family:var(--mono);font-size:14px;color:var(--t-4)}
+  .step__t{font-size:25px;letter-spacing:-.022em;margin-top:10px}
+  .step__b{font-size:16.5px;color:var(--t-2);margin-top:10px;line-height:1.5}
+  .step__fig{
+    margin-top:18px;font-family:var(--mono);font-size:15px;
+    background:var(--paper-2);border:1px solid var(--line);border-radius:11px;
+    padding:12px 14px;line-height:1.75;color:var(--t-2);
+  }
+  .step__fig b{font-weight:450;color:var(--ink)}
+  .step__fig .hot{color:var(--hot)}
+  .step__fig .up{color:var(--up)}
+
+  /* outcomes */
+  .outcomes{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .out{border-radius:15px;padding:24px 26px;border:1px solid var(--line)}
+  .out--good{background:rgba(34,160,74,.05);border-color:rgba(34,160,74,.18)}
+  .out--bad{background:var(--tint-2);border-color:rgba(229,72,77,.18)}
+  .out__h{display:flex;align-items:baseline;justify-content:space-between;gap:20px}
+  .out__t{font-size:22px;letter-spacing:-.02em}
+  .out__v{font-family:var(--mono);font-size:32px;letter-spacing:-.03em}
+  .out__v.up{color:var(--up)} .out__v.hot{color:var(--hot)}
+  .out__b{font-size:16px;color:var(--t-2);margin-top:10px;line-height:1.5}
+
+  .foot{
+    margin-top:34px;padding-top:26px;border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .brand{display:flex;align-items:center;gap:13px}
+  .brand__mark{width:34px;height:34px;flex:none}
+  .brand__name{font-size:26px;letter-spacing:-.028em}
+  .brand__tag{font-size:16px;color:var(--t-3);margin-left:4px}
+  .foot__right{font-family:var(--mono);font-size:15px;color:var(--t-4);text-align:right;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="head">
+    <div>
+      <div class="title">How a short works</div>
+      <div class="sub">Borrow it, sell it, buy it back cheaper. Your loss is capped at what you posted.</div>
+    </div>
+    <div class="meta">
+      worked example · $HMM<br>
+      150% margin · numbers illustrative
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step__n">01</div>
+      <div class="step__t">Post collateral</div>
+      <div class="step__b">You put up ETH. Nothing else is accepted, and this is the most you can ever lose.</div>
+      <div class="step__fig">
+        you post <b>4.410 ETH</b><br>
+        margin <b>150%</b>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step__n">02</div>
+      <div class="step__t">Borrow and sell</div>
+      <div class="step__b">The protocol takes tokens from the vault and sells them into that token's own pool, in the same transaction.</div>
+      <div class="step__fig">
+        borrow <b>124,000 HMM</b><br>
+        sold for <b class="up">+2.940 ETH</b>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step__n">03</div>
+      <div class="step__t">Hold the position</div>
+      <div class="step__b">The sale proceeds stay inside the position as collateral. Interest accrues in ETH every block, so waiting is never free.</div>
+      <div class="step__fig">
+        collateral <b>7.350 ETH</b><br>
+        debt <b>124,000 HMM</b><br>
+        health <b class="up">2.08</b>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step__n">04</div>
+      <div class="step__t">Buy back and repay</div>
+      <div class="step__b">You owe tokens, not dollars. Buy the same 124,000 back at whatever they cost now and hand them over.</div>
+      <div class="step__fig">
+        owe <b>124,000 HMM</b><br>
+        keep <b>the difference</b>
+      </div>
+    </div>
+  </div>
+
+  <div class="outcomes">
+    <div class="out out--good">
+      <div class="out__h">
+        <div class="out__t">It falls 60%</div>
+        <div class="out__v up">+1.76 ETH</div>
+      </div>
+      <div class="out__b">Those 124,000 tokens now cost 1.18 ETH instead of 2.94. You buy them back, repay the vault, and keep 1.76 ETH on 4.41 posted. A 40% return, less the ETH interest you paid to borrow.</div>
+    </div>
+
+    <div class="out out--bad">
+      <div class="out__h">
+        <div class="out__t">It rises 108%</div>
+        <div class="out__v hot">liquidated</div>
+      </div>
+      <div class="out__b">The debt grows until it reaches your collateral. A keeper closes the position and takes an 8% bonus. You lose what you posted, and not a cent more. There is no margin call chasing you.</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="brand">
+      <svg class="brand__mark" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="7" fill="#262626"/>
+        <rect x="7" y="8.5" width="18" height="3.4" rx="1.7" fill="#ffdcd3"/>
+        <rect x="7" y="20.1" width="18" height="3.4" rx="1.7" fill="#ffdcd3"/>
+      </svg>
+      <div>
+        <span class="brand__name">Squeeze</span>
+        <span class="brand__tag">the short interest tape for Robinhood Chain</span>
+      </div>
+    </div>
+    <div class="foot__right">
+      liquidation needs the 30m and 5m TWAP to break<br>
+      the desk is not built yet · github.com/eurotropica01-spec/squeeze
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
