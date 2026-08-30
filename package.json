@@ -4,12 +4,18 @@
   "private": true,
   "type": "module",
   "description": "The borrow desk and short interest tape for Robinhood Chain",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "tape": "node indexer/build-tape.mjs",
     "verify": "node indexer/verify-oracle.mjs",
-    "serve": "python -m http.server 3040 --bind 127.0.0.1"
+    "serve": "python -m http.server 3040 --bind 127.0.0.1",
+    "card": "node -e \"console.log('serve the repo, then: chrome --headless --force-device-scale-factor=2 --window-size=1600,900 --virtual-time-budget=8000 --screenshot=card.png http://127.0.0.1:3040/assets/social/gap-card.html')\""
   },
-  "repository": { "type": "git", "url": "https://github.com/eurotropica01-spec/squeeze.git" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eurotropica01-spec/squeeze.git"
+  },
   "license": "MIT"
 }
