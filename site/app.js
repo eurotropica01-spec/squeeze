@@ -185,8 +185,15 @@
 
       const target = lead.setupScore ?? 0;
       const el = $('#heroScore');
-      if (reduced || !target) { el.textContent = lead.setupScore ?? '—'; }
-      else {
+
+      /* Write the real value first. requestAnimationFrame does not fire in a
+         tab that is not compositing (opened in the background, another window
+         in front), so an animation that owns the final value would leave the
+         placeholder on screen forever. The count-up is decoration; the number
+         is not. */
+      el.textContent = lead.setupScore ?? '—';
+
+      if (!reduced && target) {
         const t0 = performance.now();
         const tick = (t) => {
           const p = Math.min((t - t0) / 1100, 1);
