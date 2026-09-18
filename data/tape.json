@@ -1,8 +1,8 @@
 {
   "$schema": "squeeze-tape-v0",
-  "generatedAt": "2026-09-18T16:22:33.225Z",
+  "generatedAt": "2026-09-18T20:53:22.267Z",
   "chainId": 4663,
-  "block": 66364084,
+  "block": 66525280,
   "rpc": "https://rpc.mainnet.chain.robinhood.com",
   "note": "v0 Setup Score on proxy data. This is NOT short interest — that requires the borrow market to exist. Short-interest fields are null by design.",
   "model": {
